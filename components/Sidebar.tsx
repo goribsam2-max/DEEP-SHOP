@@ -11,10 +11,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
   const socialLinks = [
-    { icon: 'fa-tiktok', label: 'TikTok', color: 'hover:text-pink-500', link: 'https://tiktok.com/@deepshopbd' },
-    { icon: 'fa-facebook', label: 'Facebook', color: 'hover:text-blue-600', link: 'https://facebook.com/deepshopbd' },
-    { icon: 'fa-telegram', label: 'Channel', color: 'hover:text-sky-500', link: 'https://t.me/deepshopbd' },
-    { icon: 'fa-whatsapp', label: 'WhatsApp', color: 'hover:text-green-500', link: 'https://wa.me/8801700000000' },
+    { icon: 'fa-tiktok', label: 'TikTok', color: 'hover:text-pink-500', link: 'https://www.tiktok.com/@deep.shop.official?_r=1&_t=ZS-93D97uEogBV' },
+    { icon: 'fa-facebook', label: 'Facebook', color: 'hover:text-blue-600', link: 'https://www.facebook.com/share/188AxriwWq/?mibextid=wwXIfr' },
+    { icon: 'fa-telegram', label: 'Channel', color: 'hover:text-sky-500', link: 'https://t.me/s10xiosback' },
+    { icon: 'fa-whatsapp', label: 'WhatsApp', color: 'hover:text-green-500', link: 'https://wa.me/8801778953114' },
   ];
 
   return (
@@ -91,7 +91,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
             </div>
           </div>
           
-          <p className="text-[9px] font-black text-slate-400 uppercase text-center mt-12 tracking-widest opacity-50">Deep Shop Bangladesh © 2024</p>
+          <p className="text-[9px] font-black text-slate-400 uppercase text-center mt-12 tracking-widest opacity-50">Deep Shop Bangladesh © 2026</p>
         </div>
       </div>
     </>
