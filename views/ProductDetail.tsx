@@ -20,8 +20,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   const [related, setRelated] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reviewText, setReviewText] = useState('');
-  const [rating, setRating] = useState(5);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -33,7 +31,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           const prodData = { id: docSnap.id, ...docSnap.data() } as Product;
           setProduct(prodData);
           
-          // Related products fetch: Simplified query to avoid index requirements initially
           const relatedQ = query(
             collection(db, 'products'),
             where('category', '==', prodData.category),
@@ -45,7 +42,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
             .filter(p => p.id !== id)
           );
 
-          // Reviews fetch
           const revQ = query(collection(db, 'reviews'), where('productId', '==', id));
           const revSnap = await getDocs(revQ);
           setReviews(revSnap.docs.map(d => ({ id: d.id, ...d.data() } as Review)));
@@ -99,18 +95,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
             {product.description}
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+          {/* Corrected: THICKER, more rectangular buttons (rounded-2xl) */}
+          <div className="flex flex-col sm:flex-row gap-5 mt-auto">
             <button 
               onClick={addToCart}
               disabled={isOutOfStock}
-              className="flex-1 h-[50px] glass rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition-all shadow-md active:scale-95"
+              className="flex-1 h-20 md:h-16 glass rounded-2xl font-black text-lg md:text-sm uppercase tracking-widest hover:bg-slate-100 transition-all shadow-xl active:scale-95 border-b-4 border-slate-200 dark:border-white/20"
             >
               Add to Bag
             </button>
             <button 
               onClick={() => { addToCart(); navigate('/checkout'); }}
               disabled={isOutOfStock}
-              className="flex-1 h-[50px] bg-primary text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:brightness-110 active:scale-95 transition-all"
+              className="flex-1 h-20 md:h-16 bg-primary text-white rounded-2xl font-black text-lg md:text-sm uppercase tracking-widest shadow-[0_15px_30px_rgba(46,139,87,0.3)] hover:brightness-110 active:scale-95 transition-all border-b-4 border-black/10"
             >
               Secure Order
             </button>
@@ -118,7 +115,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         </div>
       </div>
 
-      {/* Related Products Section */}
+      {/* Related Products */}
       {related.length > 0 && (
         <section className="mb-20">
           <div className="flex items-center gap-4 mb-10">
@@ -129,10 +126,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {related.map(p => (
               <Link key={p.id} to={`/product/${p.id}`} className="glass p-5 rounded-2xl border-white/20 transition-all hover:-translate-y-2 hover:shadow-xl group">
-                <div className="h-32 flex items-center justify-center bg-white rounded-xl mb-4 p-2">
+                <div className="h-40 flex items-center justify-center bg-white rounded-xl mb-4 p-2">
                   <img src={p.image} className="max-h-full object-contain group-hover:scale-110 transition-transform" />
                 </div>
-                <h4 className="font-bold text-[10px] uppercase truncate mb-2 tracking-tight">{p.name}</h4>
+                <h4 className="font-bold text-[13px] uppercase truncate mb-2 tracking-tight">{p.name}</h4>
                 <p className="font-black text-primary text-sm">৳{p.price.toLocaleString()}</p>
               </Link>
             ))}
@@ -140,19 +137,19 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         </section>
       )}
 
-      {/* Review Broadcast Section */}
+      {/* Reviews */}
       <section className="mt-20 glass p-8 md:p-12 rounded-[32px] border-white/20 shadow-xl">
         <h3 className="text-2xl font-black uppercase tracking-tighter mb-10">Product Voices</h3>
         <div className="space-y-8">
           {reviews.length > 0 ? reviews.map(rev => (
             <div key={rev.id} className="border-b border-white/10 pb-8 last:border-0">
                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400">
-                    <i className="fas fa-user-circle text-xl"></i>
+                  <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-slate-400">
+                    <i className="fas fa-user-circle text-2xl"></i>
                   </div>
                   <div>
-                    <p className="font-black text-xs uppercase tracking-tight">{rev.userName}</p>
-                    <div className="flex text-gold text-[8px] gap-1">
+                    <p className="font-black text-sm uppercase tracking-tight">{rev.userName}</p>
+                    <div className="flex text-gold text-[10px] gap-1">
                       {[...Array(5)].map((_, i) => <i key={i} className={`${rev.rating > i ? 'fas' : 'far'} fa-star`}></i>)}
                     </div>
                   </div>
