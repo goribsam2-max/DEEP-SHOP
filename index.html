@@ -4,10 +4,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Deep Shop - Premium Shopping BD</title>
-  <!-- Tailwind CSS -->
+  <title>Deep Shop - Premium Hardware</title>
+  
+  <!-- SEO / Dynamic Meta Tags will be populated via JS -->
+  <meta name="description" content="Exclusive Tech Artifacts & Gadgets in Bangladesh. Official Deep Shop Flagship." />
+  
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(function() {
+      OneSignal.init({
+        appId: "YOUR_ONESIGNAL_APP_ID", // Replace with actual ID
+      });
+    });
+
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -17,77 +28,58 @@
             accent: '#1e90ff',
             danger: '#dc3545',
             success: '#28a745',
-            info: '#17a2b8',
             gold: '#FFD700',
-            silver: '#C0C0C0',
             bronze: '#CD7F32',
+            silver: '#C0C0C0',
             platinum: '#E5E4E2'
           },
           borderRadius: {
-            'ios': '20px',
-            'ios-lg': '30px',
-            'ios-xl': '40px'
+            'ios': '16px',
+            'ios-lg': '28px',
+            'ios-xl': '36px'
           },
           animation: {
-            'fade-in': 'fadeIn 0.5s ease-out',
-            'slide-up': 'slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-            'pulse-soft': 'pulseSoft 2s infinite',
-            'float': 'float 3s ease-in-out infinite'
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
+            'shimmer': 'shimmer 2s infinite linear',
+            'glitter': 'glitter 3s infinite',
+            'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
           },
           keyframes: {
-            fadeIn: {
-              '0%': { opacity: '0' },
-              '100%': { opacity: '1' }
-            },
-            slideUp: {
-              '0%': { transform: 'translateY(20px)', opacity: '0' },
-              '100%': { transform: 'translateY(0)', opacity: '1' }
-            },
-            pulseSoft: {
-              '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-              '50%': { opacity: '0.9', transform: 'scale(1.01)' }
-            },
-            float: {
-              '0%, 100%': { transform: 'translateY(0)' },
-              '50%': { transform: 'translateY(-10px)' }
-            }
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { transform: 'translateY(15px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+            shimmer: { '0%': { backgroundPosition: '-1000px 0' }, '100%': { backgroundPosition: '1000px 0' } },
+            glitter: { '0%, 100%': { filter: 'brightness(1) contrast(1.2) saturate(1)' }, '50%': { filter: 'brightness(1.5) contrast(1.5) saturate(2)' } }
           }
         }
       }
     }
   </script>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <!-- Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      scroll-behavior: smooth;
-    }
+    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; }
     .glass {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
     .dark .glass {
-      background: rgba(20, 20, 20, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(10, 10, 10, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    .gradient-text {
-      background: linear-gradient(135deg, #2e8b57 0%, #1e90ff 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    .rank-hero { background: linear-gradient(135deg, #FF0000 0%, #FF8C00 100%); }
+    .rank-grand { background: linear-gradient(135deg, #000000 0%, #434343 100%); color: gold !important; }
     
-    .rank-hero { background: linear-gradient(45deg, #ff416c, #ff4b2b); }
-    .rank-grand { background: linear-gradient(45deg, #4facfe, #00f2fe); }
+    .admin-badge-glow {
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+      border: 1px solid rgba(255, 215, 0, 0.8);
+    }
   </style>
   <script type="importmap">
   {
@@ -103,7 +95,7 @@
   </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100 transition-colors duration-300">
+<body class="bg-white dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-primary selection:text-white">
   <div id="root"></div>
 <script type="module" src="/index.tsx"></script>
 </body>
