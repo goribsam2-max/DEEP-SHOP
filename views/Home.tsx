@@ -90,11 +90,12 @@ const Home: React.FC = () => {
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const isOutOfStock = product.stock !== 'instock';
+  const firstName = product.mentionedUserName ? product.mentionedUserName.split(' ')[0] : null;
 
   return (
     <Link 
       to={`/product/${product.id}`}
-      className="group flex flex-col bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-3xl overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none h-full relative"
+      className="group flex flex-col bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-ios-lg overflow-hidden transition-all duration-500 hover:border-primary/30 hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-none h-full relative"
     >
       <div className={`aspect-square relative flex items-center justify-center p-8 bg-slate-50 dark:bg-black/20 overflow-hidden ${isOutOfStock ? 'grayscale opacity-60' : ''}`}>
         <img 
@@ -113,6 +114,14 @@ const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
         <h3 className="font-bold text-[13px] mb-3 line-clamp-2 uppercase tracking-tight text-slate-800 dark:text-slate-200 group-hover:text-primary transition-colors">
           {product.name}
         </h3>
+        
+        {firstName && (
+          <div className="mb-4 flex items-center gap-2">
+            <span className="text-[9px] font-black uppercase tracking-wider text-slate-900 dark:text-white">{firstName}</span>
+            <span className="text-[8px] font-black uppercase tracking-[0.2em] bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/10">PHONE</span>
+          </div>
+        )}
+
         <div className="mt-auto flex items-center justify-between">
           <span className={`text-base font-black ${isOutOfStock ? 'text-slate-400' : 'text-slate-900 dark:text-white'}`}>
             ৳{product.price.toLocaleString()}
