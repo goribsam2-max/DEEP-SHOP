@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { auth, db } from './services/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
-// Added 'where' to the firestore imports to fix the error on line 71
-import { doc, getDoc, collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
-import { User, Notification } from './types';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { doc, onSnapshot, collection, query, where, limit } from 'firebase/firestore';
+import { User, SiteConfig } from './types';
 
 // Views
 import Home from './views/Home';
@@ -37,49 +36,73 @@ const AppContent: React.FC = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Device ID Logic
+    let deviceId = localStorage.getItem('ds_hw_id');
+    if (!deviceId) {
+      deviceId = 'hw_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('ds_hw_id', deviceId);
+    }
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDoc.exists()) {
-            setUser({ uid: firebaseUser.uid, ...userDoc.data() } as User);
+        const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            const userData = { uid: firebaseUser.uid, ...docSnap.data() } as User;
+            
+            // Check for Hardware Ban
+            if (userData.isBanned || (userData.bannedDevices && userData.bannedDevices.includes(deviceId!))) {
+              notify('ACCESSED DENIED: This account or device is permanently blacklisted.', 'error');
+              signOut(auth);
+              setUser(null);
+            } else {
+              setUser(userData);
+            }
           } else {
             setUser(null);
           }
-        } catch (e) {
-          console.error("Auth user document fetch error:", e);
-          setUser(null);
-        }
+          setLoading(false);
+        });
+        return () => unsubUser();
       } else {
         setUser(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribeAuth();
   }, []);
 
-  // Separate effect for notification listener to avoid issues if rules are tight
+  // Dynamic SEO & Meta
   useEffect(() => {
-    if (!user?.uid) {
-      setHasUnread(false);
-      return;
-    }
+    const unsubConfig = onSnapshot(doc(db, 'site_config', 'global'), (snap) => {
+      if (snap.exists()) {
+        const config = snap.data() as SiteConfig;
+        document.title = config.metaTitle || 'Deep Shop Bangladesh';
+        
+        const updateMeta = (name: string, content: string, property = false) => {
+          let el = document.querySelector(`meta[${property ? 'property' : 'name'}="${name}"]`);
+          if (!el) {
+            el = document.createElement('meta');
+            el.setAttribute(property ? 'property' : 'name', name);
+            document.head.appendChild(el);
+          }
+          el.setAttribute('content', content);
+        };
 
-    // Listener for user-specific notifications to update unread badge
-    const qNotify = query(
-      collection(db, 'users', user.uid, 'notifications'), 
-      where('isRead', '==', false),
-      limit(1)
-    );
-    
-    const unsubscribeNotify = onSnapshot(qNotify, (snapshot) => {
-      setHasUnread(!snapshot.empty);
-    }, (err) => {
-      console.debug("Unread notification listener error (expected if empty):", err);
+        updateMeta('description', config.metaDescription || '');
+        updateMeta('keywords', config.keywords || '');
+        updateMeta('og:title', config.metaTitle || '', true);
+        updateMeta('og:description', config.metaDescription || '', true);
+        updateMeta('og:image', config.ogImage || '', true);
+      }
     });
+    return () => unsubConfig();
+  }, []);
 
-    return () => unsubscribeNotify();
+  useEffect(() => {
+    if (!user?.uid) return;
+    const q = query(collection(db, 'users', user.uid, 'notifications'), where('isRead', '==', false), limit(1));
+    return onSnapshot(q, (snap) => setHasUnread(!snap.empty));
   }, [user?.uid]);
 
   const notify = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -123,12 +146,10 @@ const AppContent: React.FC = () => {
   );
 };
 
-const App: React.FC = () => {
-  return (
-    <HashRouter>
-      <AppContent />
-    </HashRouter>
-  );
-};
+const App: React.FC = () => (
+  <HashRouter>
+    <AppContent />
+  </HashRouter>
+);
 
 export default App;
