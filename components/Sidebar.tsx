@@ -11,10 +11,10 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
   const socialLinks = [
-    { icon: 'fa-tiktok', label: 'TikTok', color: 'hover:text-pink-500', link: 'https://tiktok.com/@deepshopbd' },
-    { icon: 'fa-facebook', label: 'Facebook', color: 'hover:text-blue-600', link: 'https://facebook.com/deepshopbd' },
-    { icon: 'fa-telegram', label: 'Message', color: 'hover:text-sky-400', link: 'https://t.me/deepshop_admin' },
-    { icon: 'fa-paper-plane', label: 'Channel', color: 'hover:text-sky-500', link: 'https://t.me/deepshopbd' },
+    { icon: 'fa-tiktok', label: 'TikTok', color: 'hover:text-pink-500', link: 'https://www.tiktok.com/@deep.shop.official?_r=1&_t=ZS-93EQd1fBx9F' },
+    { icon: 'fa-facebook', label: 'Facebook', color: 'hover:text-blue-600', link: 'https://www.facebook.com/share/1FzTtp9DH7/?mibextid=wwXIfr' },
+    { icon: 'fa-telegram', label: 'Message', color: 'hover:text-sky-400', link: 'https://t.me/deepshopback' },
+    { icon: 'fa-paper-plane', label: 'Channel', color: 'hover:text-sky-500', link: 'https://t.me/s10xiosback' },
     { icon: 'fa-whatsapp', label: 'WhatsApp', color: 'hover:text-green-500', link: 'https://wa.me/8801778953114' },
   ];
 
