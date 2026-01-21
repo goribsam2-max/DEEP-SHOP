@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, limit, getDocs, addDoc, onSnapshot, orderBy } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, limit, getDocs, addDoc, onSnapshot, orderBy, increment, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { Product, User, Review } from '../types';
 import Loader from '../components/Loader';
@@ -30,24 +30,30 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const docSnap = await getDoc(doc(db, 'products', id));
+        const productRef = doc(db, 'products', id);
+        const docSnap = await getDoc(productRef);
+        
         if (docSnap.exists()) {
           const prodData = { id: docSnap.id, ...docSnap.data() } as Product;
           setProduct(prodData);
-          
-          // Dynamic Meta Updates
-          document.title = `${prodData.name} - Deep Shop Bangladesh`;
-          const metaDesc = document.querySelector('meta[name="description"]');
-          if (metaDesc) metaDesc.setAttribute('content', prodData.description.substring(0, 160));
+          await updateDoc(productRef, { views: increment(1) });
           
           if (prodData.mentionedUserId) {
             const uSnap = await getDoc(doc(db, 'users', prodData.mentionedUserId));
             if (uSnap.exists()) setMentionedUser({ uid: uSnap.id, ...uSnap.data() } as User);
           }
 
-          const relatedQ = query(collection(db, 'products'), where('category', '==', prodData.category), limit(4));
+          // Fetch related products from same category
+          const relatedQ = query(
+            collection(db, 'products'), 
+            where('category', '==', prodData.category), 
+            limit(5)
+          );
           const relSnap = await getDocs(relatedQ);
-          setRelated(relSnap.docs.map(d => ({ id: d.id, ...d.data() } as Product)).filter(p => p.id !== id));
+          const relItems = relSnap.docs
+            .map(d => ({ id: d.id, ...d.data() } as Product))
+            .filter(p => p.id !== id);
+          setRelated(relItems);
         }
       } catch (err) { console.error(err); } finally { setLoading(false); }
     };
@@ -71,13 +77,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     else cart.push({ ...product, quantity: 1 });
     localStorage.setItem('cart', JSON.stringify(cart));
     window.dispatchEvent(new Event('cartUpdated'));
-    notify('Product added to your shopping bag!', 'success');
+    notify('Product added to bag!', 'success');
   };
 
   const submitReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return notify('Authentication required to submit feedback.', 'error');
-    if (!newReview.comment.trim()) return notify('Feedback content cannot be empty.', 'error');
+    if (!user) return notify('Login required to submit a review.', 'error');
+    if (!newReview.comment.trim()) return notify('Review cannot be empty.', 'error');
     try {
       await addDoc(collection(db, 'reviews'), {
         productId: id, userId: user.uid, userName: user.name,
@@ -85,12 +91,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         likes: [], dislikes: [], replies: [], timestamp: new Date()
       });
       setNewReview({ rating: 5, comment: '' });
-      notify('Feedback recorded. Thank you!', 'success');
+      notify('Review submitted!', 'success');
     } catch (e: any) { notify(e.message, 'error'); }
   };
 
   if (loading) return <Loader fullScreen />;
-  if (!product) return <div className="p-40 text-center uppercase tracking-widest opacity-20 font-black">Entity Not Found</div>;
+  if (!product) return <div className="p-40 text-center uppercase tracking-widest opacity-20 font-black">Product Not Found</div>;
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-12 animate-fade-in pb-40 relative">
@@ -100,7 +106,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
         </div>
         <div className="flex flex-col justify-center">
           <div className="mb-10">
-            <span className="text-primary font-bold text-[10px] uppercase tracking-[0.4em] mb-4 block">Official Deep Shop Release</span>
+            <span className="text-primary font-bold text-[10px] uppercase tracking-[0.4em] mb-4 block">Official Deep Shop Product</span>
             <h1 className="text-3xl md:text-5xl font-black mb-6 uppercase tracking-tight leading-tight">{product.name}</h1>
             <div className="flex flex-wrap items-center gap-6">
               <span className={`text-4xl md:text-5xl font-black ${isOutOfStock ? 'text-slate-400' : 'text-slate-950 dark:text-white'}`}>৳{product.price.toLocaleString()}</span>
@@ -134,13 +140,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
               )}
 
               <span className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${isOutOfStock ? 'bg-red-50 text-red-500 border-red-100' : 'bg-green-50 text-green-600 border-green-100'}`}>
-                {isOutOfStock ? 'Unavailable' : 'In Stock'}
+                {isOutOfStock ? 'Sold Out' : 'In Stock'}
               </span>
             </div>
           </div>
           
           <div className="p-8 rounded-3xl bg-slate-50 dark:bg-zinc-900/50 border border-slate-100 dark:border-white/10 mb-10 shadow-inner">
-            <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Architecture & Specs</h5>
+            <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mb-4">Description</h5>
             <p className="text-slate-600 dark:text-slate-400 font-medium leading-relaxed text-sm whitespace-pre-wrap">{product.description}</p>
           </div>
 
@@ -157,49 +163,52 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
               disabled={isOutOfStock}
               className={`h-16 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${isOutOfStock ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-primary text-white shadow-xl shadow-primary/20 active:scale-95 hover:brightness-110'}`}
             >
-              Express Checkout
+              Order Now
             </button>
           </div>
         </div>
       </div>
 
-      {/* Related Section */}
       {related.length > 0 && (
         <section className="mb-32">
-          <div className="flex items-center justify-between mb-10">
-            <h3 className="text-xl font-black uppercase tracking-tight">Discover More</h3>
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h3 className="text-2xl font-black uppercase tracking-tight">Related Gadgets</h3>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Similar hardware in category</p>
+            </div>
             <div className="h-px flex-1 bg-slate-100 dark:bg-white/5 ml-8"></div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {related.map(p => (
-              <Link key={p.id} to={`/product/${p.id}`} className="group p-5 bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-[32px] hover:border-primary transition-all shadow-sm">
-                <div className={`aspect-square mb-6 bg-slate-50 dark:bg-black/20 rounded-2xl p-5 ${p.stock !== 'instock' ? 'grayscale opacity-50' : ''}`}>
+              <Link key={p.id} to={`/product/${p.id}`} className="group flex flex-col bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-[32px] overflow-hidden transition-all duration-500 hover:shadow-2xl h-full">
+                <div className={`aspect-square relative flex items-center justify-center p-6 bg-slate-50 dark:bg-black/20 overflow-hidden ${p.stock !== 'instock' ? 'grayscale opacity-50' : ''}`}>
                   <img src={p.image} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" alt={p.name} />
                 </div>
-                <h4 className="font-bold text-[10px] uppercase truncate mb-2">{p.name}</h4>
-                <p className="text-primary font-black text-xs">৳{p.price.toLocaleString()}</p>
+                <div className="p-6">
+                  <h4 className="font-bold text-[11px] uppercase truncate mb-2 group-hover:text-primary transition-colors">{p.name}</h4>
+                  <p className="text-primary font-black text-xs">৳{p.price.toLocaleString()}</p>
+                </div>
               </Link>
             ))}
           </div>
         </section>
       )}
 
-      {/* Reviews */}
       <section className="border-t border-slate-100 dark:border-white/5 pt-20">
-        <h3 className="text-2xl font-black uppercase tracking-tighter mb-16">Customer Verification</h3>
+        <h3 className="text-2xl font-black uppercase tracking-tighter mb-16">Customer Reviews</h3>
 
         {user && (
           <form onSubmit={submitReview} className="mb-24 space-y-6 max-w-2xl">
             <div className="flex items-center gap-6">
-               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Rating System</span>
+               <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Rating</span>
                <div className="flex gap-1.5">
                  {[1,2,3,4,5].map(s => (
                    <button key={s} type="button" onClick={() => setNewReview({...newReview, rating: s})} className={`text-xl transition-all ${newReview.rating >= s ? 'text-gold scale-110' : 'text-slate-200'}`}><i className="fas fa-star"></i></button>
                  ))}
                </div>
             </div>
-            <textarea placeholder="Draft your experience..." className="w-full h-32 p-6 bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-2xl outline-none font-medium text-sm focus:border-primary transition-all shadow-inner" value={newReview.comment} onChange={e => setNewReview({...newReview, comment: e.target.value})} />
-            <button className="h-12 px-10 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg">Submit Feedback</button>
+            <textarea placeholder="Write your review here..." className="w-full h-32 p-6 bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-2xl outline-none font-medium text-sm focus:border-primary transition-all shadow-inner" value={newReview.comment} onChange={e => setNewReview({...newReview, comment: e.target.value})} />
+            <button className="h-12 px-10 bg-slate-900 dark:bg-white text-white dark:text-black rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg">Submit Review</button>
           </form>
         )}
 
@@ -218,7 +227,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
               </div>
             </div>
           ))}
-          {reviews.length === 0 && <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300">No public verification yet.</p>}
+          {reviews.length === 0 && <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300">No reviews yet.</p>}
         </div>
       </section>
     </div>
