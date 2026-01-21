@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { auth, db } from './services/firebase';
@@ -16,6 +15,7 @@ import Profile from './views/Profile';
 import Admin from './views/Admin';
 import Checkout from './views/Checkout';
 import SellPhone from './views/SellPhone';
+import Explore from './views/Explore';
 
 // Components
 import Navbar from './components/Navbar';
@@ -75,6 +75,13 @@ const AppContent: React.FC = () => {
       if (snap.exists()) {
         const config = snap.data() as SiteConfig;
         document.title = config.metaTitle || 'Deep Shop Bangladesh';
+        
+        // Dynamic OneSignal Init
+        if (config.oneSignalAppId && (window as any).OneSignal) {
+           (window as any).OneSignal.push(() => {
+             (window as any).OneSignal.init({ appId: config.oneSignalAppId });
+           });
+        }
       }
     });
     return () => unsubConfig();
@@ -87,18 +94,7 @@ const AppContent: React.FC = () => {
   }, [user?.uid]);
 
   const notify = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
-    // Professional Error Cleaner
-    let cleanMsg = msg;
-    if (type === 'error') {
-      cleanMsg = msg.replace(/Firebase: /g, '')
-                    .replace(/auth\//g, '')
-                    .replace(/\(.*\)/g, '')
-                    .replace(/-/g, ' ')
-                    .trim();
-      // Capitalize first letter
-      cleanMsg = cleanMsg.charAt(0).toUpperCase() + cleanMsg.slice(1);
-    }
-    setGlobalNotify({ msg: cleanMsg, type });
+    setGlobalNotify({ msg, type });
   };
 
   if (loading) return <Loader fullScreen />;
@@ -114,6 +110,7 @@ const AppContent: React.FC = () => {
         <main className="min-h-[80vh]">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/explore" element={<Explore />} />
             <Route path="/product/:id" element={<ProductDetail user={user} />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout user={user} />} />
