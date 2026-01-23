@@ -24,14 +24,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify }) =>
              <img src="https://i.ibb.co.com/cKknZQx1/IMG-2179.jpg" className="w-full h-full object-cover rounded-lg" alt="Logo" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black tracking-tighter text-slate-900 dark:text-white leading-none">DEEP SHOP</span>
-            <span className="text-[7px] font-black tracking-[0.3em] text-primary uppercase mt-1">Official Flagship</span>
+            <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase brand-font">DEEP SHOP</span>
+            <span className="text-[7px] font-black tracking-[0.3em] text-primary uppercase mt-1">অফিসিয়াল স্টোর</span>
           </div>
         </Link>
       </div>
 
       <div className="flex items-center gap-2">
-        <Link to="/profile?tab=notifications" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
+        <Link to="/profile" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
           <i className="far fa-bell text-xl"></i>
           {hasUnreadNotify && (
             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white dark:border-black animate-pulse"></span>
@@ -42,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify }) =>
           <div className="w-11 h-11 bg-slate-100 dark:bg-white/10 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
             {user ? (
               <img 
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=2e8b57&color=fff&size=128`} 
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=e11d48&color=fff&size=128`} 
                 alt={user.name} 
                 className="w-full h-full object-cover"
               />
