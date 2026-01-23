@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useContext } from 'react';
 import { db, auth } from '../services/firebase';
 import { collection, doc, getDoc, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';
@@ -10,11 +11,19 @@ import { sendTelegramNotification } from '../services/telegram';
 
 const AddProduct: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
   const { notify } = useContext(NotificationContext);
+
+  // Hardcoded Bengali Categories as requested
+  const productCategories = [
+    'মোবাইল',
+    'ল্যাপটপ',
+    'পোশাক',
+    'এক্সেসরিজ',
+    'ডিজিটাল প্রোডাক্ট'
+  ];
 
   const [form, setForm] = useState({
     name: '',
@@ -32,8 +41,6 @@ const AddProduct: React.FC = () => {
       if (!auth.currentUser) { navigate('/auth'); return; }
       const uSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
       if (uSnap.exists()) setUser({ uid: uSnap.id, ...uSnap.data() } as User);
-      const cSnap = await getDocs(collection(db, 'categories'));
-      setCategories(cSnap.docs.map(d => ({ id: d.id, ...d.data() } as Category)));
       setLoading(false);
     };
     fetchInitialData();
@@ -51,10 +58,10 @@ const AddProduct: React.FC = () => {
         timestamp: serverTimestamp()
       });
       
-      const tgMsg = `🔔 <b>নতুন সেলার অনুরোধ!</b>\n\n👤 <b>নাম:</b> ${user.name}\n📞 <b>ফোন:</b> ${user.phone}\n📧 <b>ইমেইল:</b> ${user.email}\n\nদয়া করে অ্যাডমিন প্যানেল চেক করুন।`;
+      const tgMsg = `🔔 <b>নতুন সেলার অনুরোধ!</b>\n\n👤 <b>নাম:</b> ${user.name}\n📞 <b>ফোন:</b> ${user.phone}\n📧 <b>ইমেইল:</b> ${user.email}\n\nদয়া করে অ্যাডমিন প্যানেল চেক করুন।`;
       await sendTelegramNotification(tgMsg);
 
-      notify('অনুরোধ পাঠানো হয়েছে!', 'success');
+      notify('অনুরোধ পাঠানো হয়েছে!', 'success');
       const waMsg = `DEEP SHOP ভেরিফিকেশন অনুরোধ:\nনাম: ${user.name}\nফোন: ${user.phone}\nআমি সেলার হিসেবে ভেরিফাই হতে চাই। আমার এনআইডি পাঠাচ্ছি।`;
       window.open(`https://wa.me/8801778953114?text=${encodeURIComponent(waMsg)}`, '_blank');
     } catch (e: any) { notify(e.message, 'error'); }
@@ -81,7 +88,7 @@ const AddProduct: React.FC = () => {
         timestamp: serverTimestamp(),
         views: 0
       });
-      notify('প্রোডাক্ট সফলভাবে যুক্ত হয়েছে!', 'success');
+      notify('প্রোডাক্ট সফলভাবে যুক্ত হয়েছে!', 'success');
       navigate('/profile');
     } catch (e: any) { notify(e.message, 'error'); }
     finally { setSubmitting(false); }
@@ -97,7 +104,7 @@ const AddProduct: React.FC = () => {
         </div>
         <h2 className="text-3xl font-black uppercase mb-6 tracking-tighter brand-font">SELLER <span className="text-primary">VERIFICATION</span></h2>
         <p className="text-slate-500 mb-12 font-bold text-sm leading-relaxed px-10">
-          প্রোডাক্ট বিক্রি করতে হলে আপনাকে আপনার এনআইডি কার্ড দিয়ে ভেরিফাই হতে হবে। নিচের বাটনে ক্লিক করে অ্যাডমিনকে আপনার তথ্য পাঠান।
+          প্রোডাক্ট বিক্রি করতে হলে আপনাকে আপনার এনআইডি কার্ড দিয়ে ভেরিফাই হতে হবে। নিচের বাটনে ক্লিক করে অ্যাডমিনকে আপনার তথ্য পাঠান।
         </p>
         <button onClick={handleVerificationRequest} disabled={submitting} className="w-full h-16 bg-green-600 text-white rounded-3xl font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-4 shadow-xl active:scale-95 transition-all">
           <i className="fab fa-whatsapp text-lg"></i> অ্যাডমিনকে মেসেজ দিন
@@ -132,8 +139,8 @@ const AddProduct: React.FC = () => {
                <div className="space-y-2">
                  <label className="text-[10px] font-black uppercase text-slate-400 pl-2">ক্যাটাগরি</label>
                  <select required className="w-full h-14 px-4 bg-slate-50 dark:bg-black/20 rounded-2xl font-black uppercase text-[10px] outline-none" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
-                    <option value="">সিলেক্ট</option>
-                    {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
+                    <option value="">সিলেক্ট করুন</option>
+                    {productCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                  </select>
                </div>
             </div>
@@ -154,7 +161,7 @@ const AddProduct: React.FC = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase text-slate-400 pl-2">হোয়াটসঅ্যাপ নম্বর</label>
+              <label className="text-[10px] font-black uppercase text-slate-400 pl-2">হোয়াটসঅ্যাপ নম্বর</label>
               <input required placeholder="যোগাযোগের নম্বর" className="w-full h-14 px-6 bg-slate-50 dark:bg-black/20 rounded-2xl outline-none font-bold text-sm" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} />
             </div>
             <div className="space-y-2">
