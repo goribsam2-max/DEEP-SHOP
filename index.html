@@ -1,21 +1,25 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Deep Shop - Premium Hardware</title>
+  <title>DEEP SHOP - Premium Hardware</title>
   
-  <meta name="description" content="Exclusive Tech Artifacts & Gadgets in Bangladesh. Official Deep Shop Flagship." />
+  <meta name="description" content="Exclusive Tech Artifacts & Gadgets in Bangladesh. Official DEEP SHOP Flagship." />
   
+  <!-- PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="DEEP SHOP">
+  <link rel="apple-touch-icon" href="https://i.ibb.co.com/cKknZQx1/IMG-2179.jpg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e11d48">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignal = window.OneSignal || [];
-    OneSignal.push(function() {
-      // Logic handled via App.tsx to dynamically fetch AppID from Firestore
-    });
-
     tailwind.config = {
       darkMode: 'class',
       theme: {
@@ -36,39 +40,37 @@
             'ios-xl': '36px'
           },
           animation: {
-            'fade-in': 'fadeIn 0.4s ease-out',
-            'slide-up': 'slideUp 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)',
-            'shimmer': 'shimmer 2s infinite linear',
-            'glitter': 'glitter 3s infinite',
-            'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            'fade-in': 'fadeIn 0.5s ease-out',
+            'slide-up': 'slideUp 0.5s ease-out'
           },
           keyframes: {
             fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-            slideUp: { '0%': { transform: 'translateY(15px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
-            shimmer: { '0%': { backgroundPosition: '-1000px 0' }, '100%': { backgroundPosition: '1000px 0' } },
-            glitter: { '0%, 100%': { filter: 'brightness(1) contrast(1.2) saturate(1)' }, '50%': { filter: 'brightness(1.5) contrast(1.5) saturate(2)' } }
+            slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
           }
         }
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-    h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; }
+    body { font-family: 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+    h1, h2, h3, h4, .brand-font { font-family: 'Poppins', sans-serif; }
     .glass {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.3);
     }
     .dark .glass {
-      background: rgba(10, 10, 10, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(10, 10, 10, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Smooth Transitions for Bangla Text */
+    * { transition: background-color 0.3s ease, border-color 0.3s ease; }
   </style>
   <script type="importmap">
   {
@@ -84,7 +86,7 @@
   </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-white dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-primary selection:text-white">
+<body class="bg-[#F8F9FA] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-primary selection:text-white">
   <div id="root"></div>
 <script type="module" src="/index.tsx"></script>
 </body>
