@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { doc, getDoc, collection, query, where, limit, getDocs, onSnapshot, orderBy, increment, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, limit, getDocs, onSnapshot, orderBy, increment, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { Product, User, Review } from '../types';
 import Loader from '../components/Loader';
@@ -23,6 +23,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   const [related, setRelated] = useState<Product[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const canManage = user && product && (user.uid === product.sellerId || user.isAdmin);
 
   useEffect(() => {
     if (!id) return;
@@ -70,15 +72,50 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
     notify('ব্যাগ-এ যোগ করা হয়েছে!', 'success');
   };
 
+  const handleDeleteProduct = async () => {
+    if (!window.confirm('আপনি কি নিশ্চিত যে এই প্রোডাক্টটি মুছে ফেলতে চান?')) return;
+    if (!id) return;
+    try {
+      await deleteDoc(doc(db, 'products', id));
+      notify('প্রোডাক্ট মুছে ফেলা হয়েছে!', 'info');
+      navigate('/');
+    } catch (e: any) {
+      notify(e.message, 'error');
+    }
+  };
+
   if (loading) return <Loader fullScreen />;
   if (!product) return <div className="p-40 text-center uppercase tracking-widest opacity-20 font-black">প্রোডাক্ট পাওয়া যায়নি</div>;
 
   return (
     <div className="max-w-7xl mx-auto p-4 md:p-12 animate-fade-in pb-40 relative">
+      {/* Management Bar for Admins/Sellers */}
+      {canManage && (
+        <div className="mb-10 p-6 bg-slate-900 text-white rounded-[32px] flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl border border-white/10">
+          <div>
+            <h4 className="font-black text-xs uppercase tracking-[0.2em] mb-1">প্রোডাক্ট কন্ট্রোল প্যানেল</h4>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">আপনি এই প্রোডাক্টটি এডিট বা ডিলিট করতে পারবেন</p>
+          </div>
+          <div className="flex gap-4 w-full md:w-auto">
+            <button onClick={() => navigate(`/edit-product/${id}`)} className="flex-1 md:flex-none px-8 h-12 bg-white text-slate-900 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">
+              এডিট প্রোডাক্ট
+            </button>
+            <button onClick={handleDeleteProduct} className="flex-1 md:flex-none px-8 h-12 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition-all">
+              মুছে ফেলুন
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 mb-32">
         <div className="space-y-6">
            <div className="bg-slate-50 dark:bg-zinc-900 rounded-[44px] p-12 flex items-center justify-center border border-slate-100 dark:border-white/5 overflow-hidden shadow-sm relative">
               <img src={images[activeImage]} className="max-h-[400px] object-contain transition-transform hover:scale-110 duration-700" alt={product.name} />
+              {product.stock !== 'instock' && (
+                <div className="absolute inset-0 bg-black/5 backdrop-blur-[4px] flex items-center justify-center">
+                   <span className="bg-red-500 text-white px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest shadow-2xl">STOCK OUT</span>
+                </div>
+              )}
            </div>
            <div className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-2">
              {images.map((img, idx) => (
@@ -111,8 +148,20 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           </div>
 
           <div className="grid grid-cols-2 gap-6">
-            <button onClick={addToCart} className="h-16 rounded-[22px] font-black text-[11px] uppercase tracking-widest bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 active:scale-95 transition-all text-slate-500">ব্যাগ-এ যোগ করুন</button>
-            <button onClick={() => { addToCart(); navigate('/checkout'); }} className="h-16 rounded-[22px] font-black text-[11px] uppercase tracking-widest bg-primary text-white shadow-2xl shadow-primary/20 hover:brightness-110 active:scale-95 transition-all">এখনই কিনুন</button>
+            <button 
+              onClick={addToCart} 
+              disabled={product.stock !== 'instock'}
+              className={`h-16 rounded-[22px] font-black text-[11px] uppercase tracking-widest border border-slate-200 dark:border-white/10 transition-all ${product.stock === 'instock' ? 'bg-white dark:bg-white/5 active:scale-95 text-slate-500' : 'bg-slate-100 text-slate-300 cursor-not-allowed'}`}
+            >
+              ব্যাগ-এ যোগ করুন
+            </button>
+            <button 
+              onClick={() => { addToCart(); navigate('/checkout'); }} 
+              disabled={product.stock !== 'instock'}
+              className={`h-16 rounded-[22px] font-black text-[11px] uppercase tracking-widest shadow-2xl transition-all ${product.stock === 'instock' ? 'bg-primary text-white shadow-primary/20 hover:brightness-110 active:scale-95' : 'bg-slate-300 text-white cursor-not-allowed shadow-none'}`}
+            >
+              এখনই কিনুন
+            </button>
           </div>
 
           {seller && (
@@ -138,9 +187,10 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {related.map(p => (
-              <Link key={p.id} to={`/product/${p.id}`} className="bg-white dark:bg-zinc-900 p-8 rounded-[40px] border border-slate-100 dark:border-white/5 shadow-sm group hover:shadow-2xl transition-all">
-                <div className="aspect-square mb-6 bg-slate-50 dark:bg-black/20 rounded-3xl p-6 overflow-hidden">
+              <Link key={p.id} to={`/product/${p.id}`} className="bg-white dark:bg-zinc-900 p-8 rounded-[40px] border border-slate-100 dark:border-white/5 shadow-sm group hover:shadow-2xl transition-all h-full">
+                <div className="aspect-square mb-6 bg-slate-50 dark:bg-black/20 rounded-3xl p-6 overflow-hidden relative">
                    <img src={p.image.split(',')[0]} className="w-full h-full object-contain group-hover:scale-115 transition-transform duration-700" alt="" />
+                   {p.stock !== 'instock' && <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] flex items-center justify-center"><span className="text-[8px] font-black text-white uppercase bg-red-500 px-3 py-1 rounded-full">SOLD OUT</span></div>}
                 </div>
                 <h4 className="font-bold text-[12px] uppercase truncate mb-3 text-slate-700 dark:text-slate-300 group-hover:text-primary">{p.name}</h4>
                 <p className="text-primary font-black text-sm brand-font">৳{p.price.toLocaleString()}</p>
