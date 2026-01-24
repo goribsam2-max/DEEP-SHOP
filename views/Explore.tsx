@@ -5,12 +5,15 @@ import { db } from '../services/firebase';
 import { Product } from '../types';
 import { Link } from 'react-router-dom';
 import Loader from '../components/Loader';
+import { PRODUCT_CATEGORIES } from '../constants';
 
 const Explore: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('সবগুলো');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const filterCategories = ['সবগুলো', ...PRODUCT_CATEGORIES];
 
   useEffect(() => {
     const q = query(collection(db, 'products'), orderBy('timestamp', 'desc'));
@@ -49,21 +52,24 @@ const Explore: React.FC = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
-            <div className="flex gap-1 bg-slate-50 dark:bg-white/5 p-1 rounded-2xl border border-slate-100 dark:border-white/10 w-full md:w-auto">
-              {['সবগুলো', 'মোবাইল', 'ল্যাপটপ', 'এক্সেসরিজ'].map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`flex-1 md:flex-none px-6 h-12 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all ${
-                    activeCategory === cat ? 'bg-white dark:bg-white/10 text-primary shadow-sm' : 'text-slate-400'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
           </div>
+        </div>
+
+        {/* Category Horizontal Scroller */}
+        <div className="max-w-7xl mx-auto mt-6 flex gap-2 overflow-x-auto no-scrollbar pb-2">
+          {filterCategories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`whitespace-nowrap px-6 h-11 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all shrink-0 ${
+                activeCategory === cat 
+                  ? 'bg-primary text-white shadow-lg' 
+                  : 'bg-slate-50 dark:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
       </section>
 
