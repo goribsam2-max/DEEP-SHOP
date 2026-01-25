@@ -31,6 +31,11 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify }) =>
       </div>
 
       <div className="flex items-center gap-2">
+        {/* Track Order Icon Added Here */}
+        <Link to="/track-order" className="w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10 group transition-all">
+          <i className="fas fa-location-crosshairs text-lg group-hover:text-primary"></i>
+        </Link>
+
         <Link to="/profile" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
           <i className="far fa-bell text-xl"></i>
           {hasUnreadNotify && (
