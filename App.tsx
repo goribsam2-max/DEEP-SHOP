@@ -65,7 +65,6 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home user={user} />} />
           <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
-          <Route path="/auth-share" element={<AuthShare user={user} />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/product/:id" element={<ProductDetail user={user} />} />
           <Route path="/cart" element={<Cart />} />
