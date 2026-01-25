@@ -40,6 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
           <nav className="space-y-1 mb-12">
             <SidebarLink to="/" label="হোম পেজ" onClick={onClose} />
             <SidebarLink to="/explore" label="গ্যাজেট এক্সপ্লোর" onClick={onClose} />
+            <SidebarLink to="/track-order" label="অর্ডার ট্র্যাক" onClick={onClose} />
             <SidebarLink to="/cart" label="আমার ব্যাগ (কার্ট)" onClick={onClose} />
             <SidebarLink to="/profile" label="আমার প্রোফাইল" onClick={onClose} />
             {user?.isAdmin && <SidebarLink to="/admin" label="অ্যাডমিন ড্যাশবোর্ড" onClick={onClose} />}
