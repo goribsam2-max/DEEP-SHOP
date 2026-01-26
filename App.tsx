@@ -1,7 +1,6 @@
 
-
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -22,6 +21,9 @@ import Admin from './views/Admin';
 import AddProduct from './views/AddProduct';
 import SellerProfile from './views/SellerProfile';
 import OrderTracking from './views/OrderTracking';
+import Messages from './views/Messages';
+import ChatRoom from './views/ChatRoom';
+import StoryViewer from './views/StoryViewer';
 
 // Components
 import Loader from './components/Loader';
@@ -36,13 +38,11 @@ export const NotificationContext = React.createContext<{
 
 const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void }> = ({ user, exitShadowMode }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasUnreadNotify, setHasUnreadNotify] = useState(false);
 
-  // Hide BottomNav and Navbar on specific routes if needed
-  const hideGlobalUI = ['/auth', '/checkout'].includes(location.pathname);
   const isHome = location.pathname === '/';
+  const hideNav = ['/auth', '/checkout', '/chat/'].some(path => location.pathname.includes(path));
 
   useEffect(() => {
     if (user?.uid) {
@@ -55,29 +55,15 @@ const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void }> = (
 
   return (
     <div className="min-h-screen flex flex-col max-w-lg mx-auto bg-white dark:bg-black relative select-none shadow-2xl overflow-x-hidden">
-      
-      {/* Global Sidebar */}
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
-        user={user} 
-      />
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} user={user} />
 
-      {/* Global Navbar - Dynamic Back/Menu Button */}
-      {!hideGlobalUI && (
+      {!hideNav && (
         <Navbar 
           user={user} 
           onOpenMenu={() => setIsSidebarOpen(true)} 
           hasUnreadNotify={hasUnreadNotify}
           showBack={!isHome}
         />
-      )}
-
-      {user?.isShadowMode && (
-        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-[2000] bg-primary text-white p-3 flex items-center justify-between text-[10px] font-black uppercase tracking-widest shadow-2xl border-b border-white/20">
-           <span>Viewing as: {user.name} (Shadow Mode)</span>
-           <button onClick={exitShadowMode} className="bg-white text-primary px-4 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-all">Exit Mode</button>
-        </div>
       )}
 
       <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
@@ -93,6 +79,9 @@ const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void }> = (
           <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
           <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
           <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/messages" element={user ? <Messages user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/chat/:chatId" element={user ? <ChatRoom user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/story/:storyId" element={user ? <StoryViewer user={user} /> : <Navigate to="/auth" />} />
           <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/edit-product/:productId" element={<AddProduct />} />
@@ -101,8 +90,8 @@ const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void }> = (
         </Routes>
       </main>
 
-      {/* Global Bottom Navigation */}
-      {!hideGlobalUI && <BottomNav />}
+      {/* BottomNav shown ONLY on Home page */}
+      {isHome && <BottomNav />}
     </div>
   );
 };
@@ -128,10 +117,7 @@ const App: React.FC = () => {
             setUser({ uid: firebaseUser.uid, ...docSnap.data() } as User);
           }
           setLoading(false);
-        }, (error) => {
-          console.warn("User data listener error:", error.message);
-          setLoading(false);
-        });
+        }, () => setLoading(false));
         return () => unsubUser();
       } else {
         setUser(null);
