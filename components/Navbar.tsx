@@ -1,44 +1,62 @@
 
+
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User } from '../types';
 
 interface NavbarProps {
   user: User | null;
   onOpenMenu: () => void;
   hasUnreadNotify?: boolean;
+  showBack?: boolean;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify }) => {
+const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify, showBack }) => {
+  const navigate = useNavigate();
+
   return (
-    <nav className="sticky top-0 z-[60] glass h-20 flex items-center justify-between px-4 md:px-12 border-b border-slate-200 dark:border-white/5 shadow-sm">
+    <nav className="sticky top-0 z-[60] bg-white/80 dark:bg-black/80 backdrop-blur-xl h-20 flex items-center justify-between px-6 border-b border-slate-200 dark:border-white/5 shadow-sm">
       <div className="flex items-center gap-4">
-        <button 
-          onClick={onOpenMenu}
-          className="w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-primary transition-all border border-slate-200 dark:border-white/10"
-        >
-          <i className="fas fa-bars-staggered text-lg"></i>
-        </button>
+        {showBack ? (
+          <button 
+            onClick={() => navigate(-1)}
+            className="w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 active:scale-90 transition-all border border-slate-200 dark:border-white/10"
+          >
+            <i className="fas fa-chevron-left text-lg"></i>
+          </button>
+        ) : (
+          <button 
+            onClick={onOpenMenu}
+            className="w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 hover:text-primary transition-all border border-slate-200 dark:border-white/10"
+          >
+            <i className="fas fa-bars-staggered text-lg"></i>
+          </button>
+        )}
+        
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg p-0.5 bg-white">
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg p-0.5 bg-white shrink-0">
              <img src="https://i.ibb.co.com/cKknZQx1/IMG-2179.jpg" className="w-full h-full object-cover rounded-lg" alt="Logo" />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase brand-font">DEEP SHOP</span>
-            <span className="text-[7px] font-black tracking-[0.3em] text-primary uppercase mt-1">অফিসিয়াল স্টোর</span>
+            <span className="text-lg font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase brand-font">DEEP SHOP</span>
+            <span className="text-[6px] font-black tracking-[0.3em] text-primary uppercase mt-1">অফিসিয়াল স্টোর</span>
           </div>
         </Link>
       </div>
 
       <div className="flex items-center gap-2">
-        <Link to="/profile" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
+        <Link to="/track-order" className="w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10 group transition-all">
+          <i className="fas fa-location-crosshairs text-lg group-hover:text-primary"></i>
+        </Link>
+
+        <Link to="/notifications" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
           <i className="far fa-bell text-xl"></i>
           {hasUnreadNotify && (
             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white dark:border-black animate-pulse"></span>
           )}
         </Link>
         
-        <Link to="/profile" className="flex items-center gap-3 pl-2">
+        <Link to="/profile" className="flex items-center pl-2">
           <div className="w-11 h-11 bg-slate-100 dark:bg-white/10 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
             {user ? (
               <img 
