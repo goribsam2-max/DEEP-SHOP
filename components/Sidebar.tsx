@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { User } from '../types';
@@ -40,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
           <nav className="space-y-1 mb-12">
             <SidebarLink to="/" label="হোম পেজ" onClick={onClose} />
             <SidebarLink to="/explore" label="গ্যাজেট এক্সপ্লোর" onClick={onClose} />
+            <SidebarLink to="/messages" label="মেসেজ ইনবক্স" onClick={onClose} />
             <SidebarLink to="/cart" label="আমার ব্যাগ (কার্ট)" onClick={onClose} />
             <SidebarLink to="/profile" label="আমার প্রোফাইল" onClick={onClose} />
             {user?.isAdmin && <SidebarLink to="/admin" label="অ্যাডমিন ড্যাশবোর্ড" onClick={onClose} />}
@@ -47,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, user }) => {
 
           {user ? (
             <div className="mt-auto p-6 bg-slate-50 dark:bg-white/5 rounded-2xl flex items-center gap-4">
-               <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=e11d48&color=fff&bold=true`} className="w-10 h-10 rounded-full" alt={user.name} />
+               <img src={user.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=e11d48&color=fff&bold=true`} className="w-10 h-10 rounded-full" alt={user.name} />
                <div className="min-w-0 text-left">
                  <h4 className="font-bold text-xs truncate uppercase tracking-tight">{user.name}</h4>
                  <p className="text-[10px] font-bold text-primary uppercase mt-0.5">রিওয়ার্ড পয়েন্ট: {user.rewardPoints || 0}</p>
