@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User } from '../types';
@@ -45,10 +44,6 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify, show
       </div>
 
       <div className="flex items-center gap-2">
-        <Link to="/track-order" className="w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10 group transition-all">
-          <i className="fas fa-location-crosshairs text-lg group-hover:text-primary"></i>
-        </Link>
-
         <Link to="/notifications" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
           <i className="far fa-bell text-xl"></i>
           {hasUnreadNotify && (
@@ -58,7 +53,13 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify, show
         
         <Link to="/profile" className="flex items-center pl-2">
           <div className="w-11 h-11 bg-slate-100 dark:bg-white/10 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10">
-            {user ? (
+            {user?.profilePic ? (
+              <img 
+                src={user.profilePic} 
+                alt={user.name} 
+                className="w-full h-full object-cover"
+              />
+            ) : user ? (
               <img 
                 src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=e11d48&color=fff&size=128`} 
                 alt={user.name} 
