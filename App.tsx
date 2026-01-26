@@ -1,6 +1,7 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -25,12 +26,88 @@ import OrderTracking from './views/OrderTracking';
 // Components
 import Loader from './components/Loader';
 import GlobalNotification from './components/Notification';
+import Navbar from './components/Navbar';
+import BottomNav from './components/BottomNav';
+import Sidebar from './components/Sidebar';
 
 export const NotificationContext = React.createContext<{
   notify: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }>({ notify: () => {} });
 
-const AppContent: React.FC = () => {
+const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void }> = ({ user, exitShadowMode }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [hasUnreadNotify, setHasUnreadNotify] = useState(false);
+
+  // Hide BottomNav and Navbar on specific routes if needed
+  const hideGlobalUI = ['/auth', '/checkout'].includes(location.pathname);
+  const isHome = location.pathname === '/';
+
+  useEffect(() => {
+    if (user?.uid) {
+      const unsub = onSnapshot(doc(db, 'users', user.uid, 'notifications', 'status'), (snap) => {
+        if (snap.exists()) setHasUnreadNotify(snap.data().hasUnread);
+      });
+      return () => unsub();
+    }
+  }, [user?.uid]);
+
+  return (
+    <div className="min-h-screen flex flex-col max-w-lg mx-auto bg-white dark:bg-black relative select-none shadow-2xl overflow-x-hidden">
+      
+      {/* Global Sidebar */}
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        user={user} 
+      />
+
+      {/* Global Navbar - Dynamic Back/Menu Button */}
+      {!hideGlobalUI && (
+        <Navbar 
+          user={user} 
+          onOpenMenu={() => setIsSidebarOpen(true)} 
+          hasUnreadNotify={hasUnreadNotify}
+          showBack={!isHome}
+        />
+      )}
+
+      {user?.isShadowMode && (
+        <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-[2000] bg-primary text-white p-3 flex items-center justify-between text-[10px] font-black uppercase tracking-widest shadow-2xl border-b border-white/20">
+           <span>Viewing as: {user.name} (Shadow Mode)</span>
+           <button onClick={exitShadowMode} className="bg-white text-primary px-4 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-all">Exit Mode</button>
+        </div>
+      )}
+
+      <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
+        <Routes>
+          <Route path="/" element={<Home user={user} />} />
+          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/product/:id" element={<ProductDetail user={user} />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout user={user} />} />
+          <Route path="/track-order" element={<OrderTracking />} />
+          <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
+          <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/edit-product/:productId" element={<AddProduct />} />
+          <Route path="/seller/:id" element={<SellerProfile />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
+
+      {/* Global Bottom Navigation */}
+      {!hideGlobalUI && <BottomNav />}
+    </div>
+  );
+};
+
+const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [globalNotify, setGlobalNotify] = useState<{ msg: string, type: 'success' | 'error' | 'info' } | null>(null);
@@ -77,34 +154,8 @@ const AppContent: React.FC = () => {
 
   return (
     <NotificationContext.Provider value={{ notify }}>
-      <div className="min-h-screen flex flex-col max-w-lg mx-auto bg-white dark:bg-black relative select-none">
-        
-        {user?.isShadowMode && (
-          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-[2000] bg-primary text-white p-3 flex items-center justify-between text-[10px] font-black uppercase tracking-widest shadow-2xl border-b border-white/20">
-             <span>Viewing as: {user.name} (Shadow Mode)</span>
-             <button onClick={exitShadowMode} className="bg-white text-primary px-4 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-all">Exit Mode</button>
-          </div>
-        )}
-
-        <Routes>
-          <Route path="/" element={<Home user={user} />} />
-          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/product/:id" element={<ProductDetail user={user} />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout user={user} />} />
-          <Route path="/track-order" element={<OrderTracking />} />
-          <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/edit-product/:productId" element={<AddProduct />} />
-          <Route path="/seller/:id" element={<SellerProfile />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-
+      <HashRouter>
+        <AppLayout user={user} exitShadowMode={exitShadowMode} />
         {globalNotify && (
           <GlobalNotification 
             message={globalNotify.msg} 
@@ -112,15 +163,9 @@ const AppContent: React.FC = () => {
             onClose={() => setGlobalNotify(null)} 
           />
         )}
-      </div>
+      </HashRouter>
     </NotificationContext.Provider>
   );
 };
-
-const App: React.FC = () => (
-  <HashRouter>
-    <AppContent />
-  </HashRouter>
-);
 
 export default App;
