@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { auth } from '../services/firebase';
 import { User } from '../types';
@@ -20,8 +21,16 @@ const Profile: React.FC<{ user: User }> = ({ user }) => {
   return (
     <div className="flex-1 flex flex-col animate-fade-in bg-white dark:bg-[#050505]">
       {/* Header with Back Button */}
-      
-    
+      <div className="px-8 pt-12 pb-8 border-b border-slate-50 dark:border-white/5 bg-white/50 dark:bg-black/50 backdrop-blur-xl">
+        <div className="flex items-center gap-6 mb-10">
+           <button 
+             onClick={() => navigate(-1)} 
+             className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 flex items-center justify-center text-slate-400 active:scale-90 transition-all border border-slate-100 dark:border-white/5"
+           >
+             <i className="fas fa-chevron-left"></i>
+           </button>
+           <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">পার্সোনাল প্রোফাইল</h2>
+        </div>
 
         <div className="flex items-center gap-6">
           <div className="w-20 h-20 rounded-[28px] bg-slate-100 dark:bg-white/5 p-1 relative shadow-2xl">
