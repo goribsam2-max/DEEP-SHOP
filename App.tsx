@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-// Added updateDoc to imports
-import { doc, onSnapshot, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { User } from './types';
 
 // Views
@@ -21,162 +21,47 @@ import Admin from './views/Admin';
 import AddProduct from './views/AddProduct';
 import SellerProfile from './views/SellerProfile';
 import OrderTracking from './views/OrderTracking';
-import Messages from './views/Messages';
-import ChatRoom from './views/ChatRoom';
-import StoryViewer from './views/StoryViewer';
 
 // Components
 import Loader from './components/Loader';
 import GlobalNotification from './components/Notification';
-import Navbar from './components/Navbar';
-import BottomNav from './components/BottomNav';
-import Sidebar from './components/Sidebar';
-import BanScreen from './components/BanScreen';
 
 export const NotificationContext = React.createContext<{
   notify: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }>({ notify: () => {} });
 
-// Helper to get or create device ID
-const getDeviceId = () => {
-  let id = localStorage.getItem('ds_device_id');
-  if (!id) {
-    id = 'dev_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-    localStorage.setItem('ds_device_id', id);
-  }
-  return id;
-};
-
-const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void; isGlobalBanned: boolean; banDetails: any }> = ({ user, exitShadowMode, isGlobalBanned, banDetails }) => {
-  const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [hasUnreadNotify, setHasUnreadNotify] = useState(false);
-
-  // If banned, show nothing but the BanScreen
-  if (isGlobalBanned || (user && user.isBanned)) {
-    return <BanScreen ip={banDetails?.ip} deviceId={banDetails?.deviceId} reason={user?.isBanned ? "Account Disabled" : "Device/IP Restricted"} />;
-  }
-
-  const isHome = location.pathname === '/';
-  const hideNav = ['/auth', '/checkout', '/chat/', '/story/'].some(path => location.pathname.includes(path));
-
-  useEffect(() => {
-    if (user?.uid) {
-      const unsub = onSnapshot(doc(db, 'users', user.uid, 'notifications', 'status'), (snap) => {
-        if (snap.exists()) setHasUnreadNotify(snap.data().hasUnread);
-      });
-      return () => unsub();
-    }
-  }, [user?.uid]);
-
-  return (
-    <div className="min-h-screen flex flex-col max-w-lg mx-auto bg-white dark:bg-black relative select-none shadow-2xl overflow-x-hidden">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} user={user} />
-
-      {!hideNav && (
-        <Navbar 
-          user={user} 
-          onOpenMenu={() => setIsSidebarOpen(true)} 
-          hasUnreadNotify={hasUnreadNotify}
-          showBack={!isHome}
-        />
-      )}
-
-      <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
-        <Routes>
-          <Route path="/" element={<Home user={user} />} />
-          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/product/:id" element={<ProductDetail user={user} />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout user={user} />} />
-          <Route path="/track-order" element={<OrderTracking />} />
-          <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/messages" element={user ? <Messages user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/chat/:chatId" element={user ? <ChatRoom user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/story/:storyId" element={user ? <StoryViewer user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/edit-product/:productId" element={<AddProduct />} />
-          <Route path="/seller/:id" element={<SellerProfile />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
-
-      {isHome && <BottomNav />}
-    </div>
-  );
-};
-
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [globalNotify, setGlobalNotify] = useState<{ msg: string, type: 'success' | 'error' | 'info' } | null>(null);
-  const [isGlobalBanned, setIsGlobalBanned] = useState(false);
-  const [banDetails, setBanDetails] = useState<any>(null);
   
   useEffect(() => {
-    const checkBanStatus = async () => {
-      const deviceId = getDeviceId();
-      let ip = 'unknown';
-      try {
-        const ipRes = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipRes.json();
-        ip = ipData.ip;
-      } catch (e) {}
+    const shadowUserStr = localStorage.getItem('shadow_user');
+    if (shadowUserStr) {
+      const shadowUser = JSON.parse(shadowUserStr) as User;
+      setUser({ ...shadowUser, isShadowMode: true });
+      setLoading(false);
+      return;
+    }
 
-      setBanDetails({ ip, deviceId });
-
-      // Check if this specific IP or DeviceID is banned in Firestore
-      const deviceBanRef = doc(db, 'banned_devices', deviceId);
-      const ipBanRef = doc(db, 'banned_devices', ip.replace(/\./g, '_'));
-      
-      const [dSnap, iSnap] = await Promise.all([getDoc(deviceBanRef), getDoc(ipBanRef)]);
-      
-      if (dSnap.exists() || iSnap.exists()) {
-        setIsGlobalBanned(true);
-        setLoading(false);
-        return;
-      }
-
-      // Proceed with Auth Check
-      const shadowUserStr = localStorage.getItem('shadow_user');
-      if (shadowUserStr) {
-        const shadowUser = JSON.parse(shadowUserStr) as User;
-        setUser({ ...shadowUser, isShadowMode: true });
-        setLoading(false);
-        return;
-      }
-
-      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser) {
-          const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
-            if (docSnap.exists()) {
-              const userData = { uid: firebaseUser.uid, ...docSnap.data() } as User;
-              setUser(userData);
-              
-              // Update user's device info for tracking
-              // updateDoc is now imported above
-              updateDoc(doc(db, 'users', firebaseUser.uid), {
-                deviceId: deviceId,
-                lastIp: ip
-              }).catch(() => {});
-            }
-            setLoading(false);
-          }, () => setLoading(false));
-          return () => unsubUser();
-        } else {
-          setUser(null);
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (docSnap) => {
+          if (docSnap.exists()) {
+            setUser({ uid: firebaseUser.uid, ...docSnap.data() } as User);
+          }
           setLoading(false);
-        }
-      });
-      return () => unsubscribe();
-    };
-
-    checkBanStatus();
+        }, (error) => {
+          console.warn("User data listener error:", error.message);
+          setLoading(false);
+        });
+        return () => unsubUser();
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const notify = (msg: string, type: 'success' | 'error' | 'info' = 'info') => {
@@ -192,13 +77,34 @@ const App: React.FC = () => {
 
   return (
     <NotificationContext.Provider value={{ notify }}>
-      <HashRouter>
-        <AppLayout 
-          user={user} 
-          exitShadowMode={exitShadowMode} 
-          isGlobalBanned={isGlobalBanned}
-          banDetails={banDetails}
-        />
+      <div className="min-h-screen flex flex-col max-w-lg mx-auto bg-white dark:bg-black relative select-none">
+        
+        {user?.isShadowMode && (
+          <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-lg z-[2000] bg-primary text-white p-3 flex items-center justify-between text-[10px] font-black uppercase tracking-widest shadow-2xl border-b border-white/20">
+             <span>Viewing as: {user.name} (Shadow Mode)</span>
+             <button onClick={exitShadowMode} className="bg-white text-primary px-4 py-1.5 rounded-full hover:scale-105 active:scale-95 transition-all">Exit Mode</button>
+          </div>
+        )}
+
+        <Routes>
+          <Route path="/" element={<Home user={user} />} />
+          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/product/:id" element={<ProductDetail user={user} />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout user={user} />} />
+          <Route path="/track-order" element={<OrderTracking />} />
+          <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
+          <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
+          <Route path="/add-product" element={<AddProduct />} />
+          <Route path="/edit-product/:productId" element={<AddProduct />} />
+          <Route path="/seller/:id" element={<SellerProfile />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+
         {globalNotify && (
           <GlobalNotification 
             message={globalNotify.msg} 
@@ -206,9 +112,15 @@ const App: React.FC = () => {
             onClose={() => setGlobalNotify(null)} 
           />
         )}
-      </HashRouter>
+      </div>
     </NotificationContext.Provider>
   );
 };
+
+const App: React.FC = () => (
+  <HashRouter>
+    <AppContent />
+  </HashRouter>
+);
 
 export default App;
