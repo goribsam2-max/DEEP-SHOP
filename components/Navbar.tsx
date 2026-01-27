@@ -38,14 +38,14 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify, show
           </div>
           <div className="flex flex-col">
             <span className="text-lg font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase brand-font">DEEP SHOP</span>
-            <span className="text-[6px] font-black tracking-[0.3em] text-primary uppercase mt-1">অফিসিয়াল স্টোর</span>
+            <span className="text-[6px] font-black tracking-[0.3em] text-primary uppercase mt-1">Bangladesh</span>
           </div>
         </Link>
       </div>
 
       <div className="flex items-center gap-2">
-        <Link to="/notifications" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
-          <i className="far fa-bell text-xl"></i>
+        <Link to="/messages" className="relative w-11 h-11 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center text-slate-500 dark:text-slate-300 border border-slate-200 dark:border-white/10">
+          <i className="far fa-comment text-xl"></i>
           {hasUnreadNotify && (
             <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-primary rounded-full border-2 border-white dark:border-black animate-pulse"></span>
           )}
