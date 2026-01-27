@@ -46,7 +46,7 @@ const BanScreen: React.FC<BanScreenProps> = ({ reason, ip, deviceId }) => {
 
         <div className="space-y-4 w-full">
            <a 
-            href="https://t.me/deepshop_admin" 
+            href="https://t.me/deepshopback" 
             target="_blank"
             className="w-full h-16 bg-slate-900 dark:bg-white text-white dark:text-black rounded-3xl font-black uppercase text-[11px] tracking-widest flex items-center justify-center gap-3 shadow-2xl active:scale-95 transition-all"
            >
