@@ -1,10 +1,9 @@
 
-
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { db } from '../services/firebase';
-import { collection, query, where, onSnapshot, doc, setDoc, serverTimestamp, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, setDoc, serverTimestamp, updateDoc, getDoc, addDoc } from 'firebase/firestore';
 import { User, Chat, Story, UserNote } from '../types';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import Loader from '../components/Loader';
 import { NotificationContext } from '../App';
 import html2canvas from 'html2canvas';
@@ -13,6 +12,7 @@ const IMGBB_API_KEY = '31505ba1cbfd565b7218c0f8a8421a7e';
 
 const Messages: React.FC<{ user: User }> = ({ user }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { notify } = useContext(NotificationContext);
   const [chats, setChats] = useState<Chat[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
@@ -20,16 +20,21 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [pinnedChats, setPinnedChats] = useState<string[]>(JSON.parse(localStorage.getItem('pinned_chats') || '[]'));
   
+  // Modals
   const [showNoteInput, setShowNoteInput] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<UserNote | null>(null);
+  const [joinGroupInfo, setJoinGroupInfo] = useState<Chat | null>(null);
   const [showProfilePopup, setShowProfilePopup] = useState(false);
   const [showMultiSelect, setShowMultiSelect] = useState(false);
   const [storyEditor, setStoryEditor] = useState<{ active: boolean, image: string | null }>({ active: false, image: null });
   
+  // Forms
   const [newNote, setNewNote] = useState('');
   const [groupName, setGroupName] = useState('');
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
   const [uploadingPic, setUploadingPic] = useState(false);
   
+  // Story Edit State
   const [storyText, setStoryText] = useState('');
   const [storyTextColor, setStoryTextColor] = useState('#ffffff');
   const [storyFontSize, setStoryFontSize] = useState(24);
@@ -70,8 +75,25 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
       setNotes(docs);
     });
 
+    // Join Group via Link logic
+    const joinId = searchParams.get('join');
+    if (joinId) {
+      const fetchGroup = async () => {
+        const snap = await getDoc(doc(db, 'chats', joinId));
+        if (snap.exists()) {
+          const data = snap.data() as Chat;
+          if (!data.participants.includes(user.uid)) {
+            setJoinGroupInfo({ id: snap.id, ...data });
+          } else {
+            navigate(`/chat/${joinId}`);
+          }
+        }
+      };
+      fetchGroup();
+    }
+
     return () => { unsubChats(); unsubStories(); unsubNotes(); };
-  }, [user.uid, pinnedChats]);
+  }, [user.uid, pinnedChats, searchParams]);
 
   const handleUpdateProfilePic = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -115,6 +137,40 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
       notify('নোট শেয়ার হয়েছে!', 'success');
     } catch (e) {
       notify('নোট শেয়ার করা যায়নি', 'error');
+    }
+  };
+
+  const handleAcceptJoin = async () => {
+    if (!joinGroupInfo) return;
+    setLoading(true);
+    try {
+      const chatRef = doc(db, 'chats', joinGroupInfo.id);
+      const newParticipants = [...joinGroupInfo.participants, user.uid];
+      const newParticipantData = { 
+        ...joinGroupInfo.participantData, 
+        [user.uid]: { name: user.name, pic: user.profilePic || '' } 
+      };
+
+      await updateDoc(chatRef, {
+        participants: newParticipants,
+        participantData: newParticipantData
+      });
+
+      // Auto Welcome Message
+      await addDoc(collection(db, 'chats', joinGroupInfo.id, 'messages'), {
+        senderId: 'system_bot',
+        senderName: 'Deep Shop Bot',
+        text: `Welcome ${user.name} amader ${joinGroupInfo.groupName} group aa`,
+        timestamp: serverTimestamp()
+      });
+
+      notify('গ্রুপে জয়েন করেছেন!', 'success');
+      navigate(`/chat/${joinGroupInfo.id}`);
+    } catch (e: any) {
+      notify(e.message, 'error');
+    } finally {
+      setLoading(false);
+      setJoinGroupInfo(null);
     }
   };
 
@@ -167,7 +223,7 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
   if (loading) return <Loader fullScreen />;
 
   return (
-    <div className="flex-1 flex flex-col bg-[#fcfcfc] dark:bg-[#050505] animate-fade-in pb-32 overflow-x-hidden">
+    <div className="flex-1 flex flex-col bg-[#fcfcfc] dark:bg-[#050505] animate-fade-in pb-32 overflow-x-hidden relative">
       <div className="px-6 pt-10 pb-6">
         <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-4">
@@ -182,15 +238,15 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
            </div>
         </div>
 
-        {/* Stories & Notes */}
-        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-2 px-2 items-start h-32">
+        {/* Stories & Notes - Improved Height & Stacking */}
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-6 -mx-2 px-2 items-start h-[130px] relative z-10">
            <div className="flex flex-col items-center gap-2 shrink-0 w-20">
               <div className="relative">
                  <div className="w-16 h-16 rounded-full p-1 bg-primary/10 border-2 border-dashed border-primary">
                     <img src={user.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=e11d48&color=fff&bold=true`} className="w-full h-full rounded-full object-cover" alt="" />
                  </div>
-                 <button onClick={() => setShowNoteInput(true)} className="absolute -top-2 -right-1 bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 rounded-full w-7 h-7 flex items-center justify-center text-[10px] text-primary"><i className="fas fa-comment-dots"></i></button>
-                 <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-[10px] border-2 border-white dark:border-black cursor-pointer">
+                 <button onClick={() => setShowNoteInput(true)} className="absolute -top-1 -right-1 bg-white dark:bg-zinc-800 shadow-xl border border-slate-100 rounded-full w-7 h-7 flex items-center justify-center text-[10px] text-primary z-20"><i className="fas fa-comment-dots"></i></button>
+                 <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary text-white rounded-full flex items-center justify-center text-[10px] border-2 border-white dark:border-black cursor-pointer z-20">
                     <i className="fas fa-plus"></i>
                     <input type="file" accept="image/*" className="hidden" ref={storyFileInputRef} onChange={(e) => {
                       const file = e.target.files?.[0];
@@ -205,12 +261,13 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
               <span className="text-[8px] font-black uppercase text-slate-400">আমার আপডেট</span>
            </div>
 
+           {/* Notes Rendering - Clickable to View */}
            {notes.map(note => (
-             <div key={note.id} className="flex flex-col items-center gap-2 shrink-0 w-20 relative">
+             <div key={note.id} onClick={() => setSelectedNote(note)} className="flex flex-col items-center gap-2 shrink-0 w-20 relative cursor-pointer active:scale-95 transition-all">
                 <div className="relative w-16 h-16 rounded-full p-0.5 bg-slate-200 dark:bg-zinc-800">
                   <img src={note.userPic || `https://ui-avatars.com/api/?name=${encodeURIComponent(note.userName)}`} className="w-full h-full rounded-full object-cover" alt="" />
                   <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-2xl shadow-lg z-30 min-w-[80px] text-center">
-                    <p className="text-[10px] font-black text-black dark:text-white leading-tight line-clamp-2">{note.text}</p>
+                    <p className="text-[9px] font-black text-black dark:text-white leading-tight line-clamp-2">{note.text}</p>
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white dark:bg-zinc-900 rotate-45 border-r border-b border-slate-200 dark:border-white/10"></div>
                   </div>
                 </div>
@@ -232,7 +289,7 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 px-4 space-y-2">
+      <div className="flex-1 px-4 space-y-2 relative z-0 mt-4">
         {chats.map(chat => {
           const isGroup = !!chat.isGroup;
           const otherId = isGroup ? null : chat.participants.find(p => p !== user.uid) || '';
@@ -262,17 +319,47 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
                    {unread > 0 && <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center text-[8px] font-black text-white shadow-lg">{unread}</div>}
                 </div>
               </Link>
-              {/* Pin/Unpin Shortcut - Hidden but accessible via UI button in ChatRoom or Long Press implementation could be here */}
-              <button 
-                onClick={(e) => { e.preventDefault(); togglePin(chat.id); }} 
-                className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-primary transition-all"
-              >
-                <i className={`fas fa-thumbtack ${isPinned ? 'rotate-45' : ''}`}></i>
-              </button>
+              <button onClick={(e) => { e.preventDefault(); togglePin(chat.id); }} className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-primary transition-all"><i className={`fas fa-thumbtack ${isPinned ? 'rotate-45' : ''}`}></i></button>
             </div>
           );
         })}
       </div>
+
+      {/* Note Viewer Modal (Full Screen) */}
+      {selectedNote && (
+        <div className="fixed inset-0 z-[8000] bg-slate-950 flex flex-col items-center justify-center p-8 animate-fade-in" onClick={() => setSelectedNote(null)}>
+           <div className="absolute top-10 right-6 text-white text-2xl p-4 cursor-pointer"><i className="fas fa-times"></i></div>
+           <div className="w-full max-w-sm flex flex-col items-center animate-scale-in" onClick={e => e.stopPropagation()}>
+              <div className="w-24 h-24 rounded-[32px] overflow-hidden border-4 border-primary shadow-2xl mb-8">
+                 <img src={selectedNote.userPic || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedNote.userName)}`} className="w-full h-full object-cover" />
+              </div>
+              <h3 className="text-white font-black uppercase tracking-widest text-[10px] mb-6">{selectedNote.userName} ar Note</h3>
+              <div className="bg-white/10 backdrop-blur-xl p-10 rounded-[44px] border border-white/10 w-full text-center relative">
+                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-[10px] shadow-lg"><i className="fas fa-quote-left"></i></div>
+                 <p className="text-white text-xl font-black brand-font uppercase leading-relaxed">{selectedNote.text}</p>
+              </div>
+              <p className="text-white/30 text-[8px] font-bold uppercase mt-8 tracking-[0.4em]">Tap anywhere to close</p>
+           </div>
+        </div>
+      )}
+
+      {/* Join Group Modal */}
+      {joinGroupInfo && (
+        <div className="fixed inset-0 z-[9000] bg-black flex flex-col items-center justify-center p-8 animate-fade-in">
+           <div className="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-[56px] p-10 text-center shadow-2xl animate-scale-in">
+              <div className="w-24 h-24 bg-indigo-500 rounded-[36px] mx-auto mb-8 flex items-center justify-center text-white text-3xl shadow-xl overflow-hidden">
+                 {joinGroupInfo.groupPic ? <img src={joinGroupInfo.groupPic} className="w-full h-full object-cover" /> : <i className="fas fa-users"></i>}
+              </div>
+              <h2 className="text-2xl font-black uppercase brand-font mb-4">Group aa Join করুন</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mb-10 leading-relaxed font-bold uppercase">আপনি কি <span className="text-primary">{joinGroupInfo.groupName}</span> গ্রুপে জয়েন করতে চান?</p>
+              
+              <div className="flex flex-col gap-4">
+                 <button onClick={handleAcceptJoin} className="w-full h-18 bg-indigo-500 text-white rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">JOIN NOW</button>
+                 <button onClick={() => { setJoinGroupInfo(null); navigate('/messages'); }} className="w-full h-14 bg-slate-50 dark:bg-white/5 text-slate-400 rounded-[20px] font-black uppercase tracking-widest text-[10px] active:scale-95 transition-all">CANCEL</button>
+              </div>
+           </div>
+        </div>
+      )}
 
       {/* Floating Action Button */}
       <button onClick={() => setShowMultiSelect(true)} className="fixed bottom-28 right-8 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-2xl z-50 border-4 border-white dark:border-black active:scale-90 transition-all"><i className="fas fa-pen"></i></button>
@@ -308,7 +395,7 @@ const Messages: React.FC<{ user: User }> = ({ user }) => {
         </div>
       )}
 
-      {/* Other Modals (Note, MultiSelect, StoryEditor) kept same as previous functionality... */}
+      {/* Note Input Modal */}
       {showNoteInput && (
         <div className="fixed inset-0 z-[7000] bg-black/60 backdrop-blur-md flex items-center justify-center p-6" onClick={() => setShowNoteInput(false)}>
            <div className="bg-white dark:bg-zinc-900 w-full rounded-[40px] p-8 animate-scale-in" onClick={e => e.stopPropagation()}>
