@@ -22,7 +22,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
   const [related, setRelated] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Management controls for admin or the specific seller
   const canManage = user && product && (user.isAdmin || user.uid === product.sellerId);
 
   useEffect(() => {
@@ -38,10 +37,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           setProduct(prodData);
           setImages(prodData.image.split(',').filter(img => img.trim() !== ''));
           
-          // Count views (background)
           updateDoc(productRef, { views: increment(1) }).catch(() => {});
           
-          // Fetch Seller Info - Public Access
           if (prodData.sellerId) {
             const uSnap = await getDoc(doc(db, 'users', prodData.sellerId));
             if (uSnap.exists()) {
@@ -49,7 +46,6 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
             }
           }
 
-          // Fetch Related Products - Public Access
           const relatedQ = query(
             collection(db, 'products'), 
             where('category', '==', prodData.category), 
@@ -147,39 +143,38 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
 
   return (
     <div className="flex-1 flex flex-col bg-white dark:bg-[#050505] animate-fade-in pb-40">
-      <div className="max-w-7xl mx-auto w-full px-4 md:px-10 py-8">
+      <div className="max-w-7xl mx-auto w-full px-5 md:px-10 py-10">
         
-        <div className="flex flex-col lg:flex-row gap-12">
+        <div className="flex flex-col lg:flex-row gap-16">
           
-          {/* Gallery - Public Visibility */}
-          <div className="lg:w-1/2 space-y-6">
-            <div className="relative aspect-square bg-slate-50 dark:bg-zinc-900 rounded-[40px] overflow-hidden border border-slate-100 dark:border-white/5 shadow-inner group">
+          {/* Gallery */}
+          <div className="lg:w-1/2 space-y-8">
+            <div className="relative aspect-square bg-slate-50 dark:bg-zinc-900 rounded-[48px] overflow-hidden border border-slate-100 dark:border-white/5 shadow-inner group">
               <img 
                 src={images[activeImage]} 
-                className="w-full h-full object-contain p-8 md:p-12 transition-transform duration-700 group-hover:scale-105" 
+                className="w-full h-full object-contain p-10 md:p-16 transition-transform duration-700 group-hover:scale-110" 
                 alt={product.name} 
               />
               
-              {/* Management Buttons - Conditional Visibility */}
               {canManage && (
-                <div className="absolute top-6 right-6 flex flex-col gap-3 z-20">
+                <div className="absolute top-8 right-8 flex flex-col gap-4 z-20">
                    <button 
                     onClick={() => navigate(`/edit-product/${product.id}`)}
-                    className="w-12 h-12 bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl flex items-center justify-center text-slate-600 dark:text-white border border-slate-100 dark:border-white/10 active:scale-90 transition-all"
+                    className="w-14 h-14 bg-white dark:bg-zinc-800 rounded-3xl shadow-2xl flex items-center justify-center text-slate-600 dark:text-white border border-slate-100 dark:border-white/10 active:scale-90 transition-all"
                    >
-                     <i className="fas fa-edit text-sm"></i>
+                     <i className="fas fa-edit text-lg"></i>
                    </button>
                    <button 
                     onClick={handleDelete}
-                    className="w-12 h-12 bg-rose-500 text-white rounded-2xl shadow-2xl flex items-center justify-center active:scale-90 transition-all"
+                    className="w-14 h-14 bg-rose-600 text-white rounded-3xl shadow-2xl flex items-center justify-center active:scale-90 transition-all border border-rose-500"
                    >
-                     <i className="fas fa-trash-alt text-sm"></i>
+                     <i className="fas fa-trash-alt text-lg"></i>
                    </button>
                 </div>
               )}
 
-              <div className="absolute bottom-6 left-6 px-4 py-2 bg-black/20 backdrop-blur-md rounded-full border border-white/10">
-                 <span className="text-[9px] font-black text-white uppercase tracking-widest">
+              <div className="absolute bottom-8 left-8 px-6 py-2.5 bg-black/30 backdrop-blur-xl rounded-full border border-white/10">
+                 <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">
                    <i className="fas fa-eye mr-2"></i> {product.views || 0} Views
                  </span>
               </div>
@@ -190,7 +185,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
                  <button 
                   key={idx} 
                   onClick={() => setActiveImage(idx)}
-                  className={`w-20 h-20 rounded-2xl bg-slate-50 dark:bg-zinc-900 border-2 transition-all p-2 shrink-0 ${activeImage === idx ? 'border-primary shadow-lg scale-105' : 'border-transparent opacity-40'}`}
+                  className={`w-24 h-24 rounded-[32px] bg-slate-50 dark:bg-zinc-900 border-2 transition-all p-3 shrink-0 ${activeImage === idx ? 'border-primary shadow-xl scale-105' : 'border-transparent opacity-40'}`}
                  >
                    <img src={img} className="w-full h-full object-contain" alt="" />
                  </button>
@@ -198,82 +193,80 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
             </div>
           </div>
 
-          {/* Info - Public Visibility */}
+          {/* Info */}
           <div className="lg:w-1/2 flex flex-col">
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                 <span className="px-4 py-1.5 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest rounded-full border border-primary/10">
+            <div className="mb-10">
+              <div className="flex items-center gap-4 mb-6">
+                 <span className="px-5 py-2 bg-primary/10 text-primary text-[10px] font-black uppercase tracking-widest rounded-2xl border border-primary/20">
                    {product.category}
                  </span>
-                 <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${product.stock === 'instock' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-rose-50 text-rose-600 border-rose-100'}`}>
+                 <span className={`px-5 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest border ${product.stock === 'instock' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-rose-500/10 text-rose-600 border-rose-500/20'}`}>
                    {product.stock === 'instock' ? 'In Stock' : 'Stock Out'}
                  </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black brand-font uppercase leading-tight text-slate-900 dark:text-white mb-4">
+              <h1 className="text-4xl md:text-6xl font-black brand-font uppercase leading-[1.1] text-slate-900 dark:text-white mb-6">
                 {product.name}
               </h1>
-              <div className="flex items-baseline gap-4">
-                 <span className="text-4xl font-black text-primary brand-font italic">৳{product.price.toLocaleString()}</span>
-                 <span className="text-slate-400 text-xs font-bold uppercase tracking-widest line-through">৳{(product.price + 500).toLocaleString()}</span>
+              <div className="flex items-baseline gap-6">
+                 <span className="text-5xl font-black text-primary brand-font italic">৳{product.price.toLocaleString()}</span>
+                 <span className="text-slate-400 text-sm font-bold uppercase tracking-widest line-through decoration-primary">৳{(product.price + 500).toLocaleString()}</span>
               </div>
             </div>
 
-            <div className="space-y-6 mb-10">
-               <div className="p-8 bg-slate-50 dark:bg-white/5 rounded-[36px] border border-slate-100 dark:border-white/5">
-                  <h4 className="text-[10px] font-black uppercase text-slate-400 mb-4 tracking-[0.3em]">বিবরণ</h4>
-                  <p className="text-sm font-medium leading-relaxed text-slate-600 dark:text-slate-300 whitespace-pre-wrap italic">
+            <div className="space-y-8 mb-12">
+               <div className="p-10 bg-slate-50 dark:bg-white/5 rounded-[48px] border border-slate-100 dark:border-white/5 shadow-inner">
+                  <h4 className="text-[10px] font-black uppercase text-slate-400 mb-6 tracking-[0.5em] text-center">Product Description</h4>
+                  <p className="text-sm font-medium leading-loose text-slate-700 dark:text-slate-300 whitespace-pre-wrap italic">
                     {product.description || 'এই প্রোডাক্টটির কোন বিবরণ পাওয়া যায়নি।'}
                   </p>
                </div>
 
-               {/* Actions - Triggers Redirect if not logged in */}
-               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <button 
                     onClick={addToCart}
                     disabled={product.stock !== 'instock'}
-                    className="h-16 rounded-[22px] font-black uppercase text-[11px] tracking-widest border-2 border-slate-100 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-3"
+                    className="btn-secondary h-20 !text-[11px] !tracking-[0.2em]"
                   >
-                    <i className="fas fa-shopping-bag"></i> ব্যাগ-এ রাখুন
+                    <i className="fas fa-shopping-bag mr-3"></i> ব্যাগ-এ রাখুন
                   </button>
                   <button 
                     onClick={handleBuyNow}
                     disabled={product.stock !== 'instock'}
-                    className="h-16 rounded-[22px] font-black uppercase text-[11px] tracking-widest bg-primary text-white shadow-2xl shadow-primary/20 active:scale-95 transition-all disabled:opacity-30"
+                    className="btn-primary h-20 !text-[12px] !tracking-[0.2em]"
                   >
-                    এখনই কিনুন
+                    এখনই কিনুন <i className="fas fa-bolt ml-3"></i>
                   </button>
                </div>
             </div>
 
-            {/* Seller Card - Public Visibility */}
             {seller && (
-               <div className="bg-slate-900 dark:bg-zinc-900 p-8 rounded-[44px] text-white shadow-2xl relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full"></div>
-                  <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-8">
+               <div className="bg-slate-900 dark:bg-zinc-900 p-10 rounded-[56px] text-white shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-primary/20 blur-[80px] rounded-full"></div>
+                  <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-10">
                      <div className="flex items-center gap-6">
                         <div className="relative">
                            <img 
-                            src={seller.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.name)}&background=e11d48&color=fff&bold=true`} 
-                            className="w-20 h-20 rounded-[28px] object-cover border-4 border-white/10 shadow-xl" 
+                            src={seller.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(seller.name)}&background=00A86B&color=fff&bold=true&size=128`} 
+                            className="w-24 h-24 rounded-[36px] object-cover border-4 border-white/10 shadow-2xl" 
                             alt="" 
                            />
-                           <div className="absolute -bottom-1 -right-1">
+                           <div className="absolute -bottom-2 -right-2">
                              <RankBadge rank={seller.rankOverride || 'bronze'} size="sm" showLabel={false} />
                            </div>
                         </div>
-                        <div>
-                           <span className="text-[8px] font-black uppercase text-primary tracking-widest mb-1 block">OFFICIAL MERCHANT</span>
-                           <h4 className="text-xl font-black uppercase brand-font tracking-tight">{seller.name}</h4>
-                           <Link to={`/seller/${seller.uid}`} className="text-[10px] font-bold text-slate-400 hover:text-white underline transition-colors uppercase mt-1 inline-block">
+                        <div className="text-center sm:text-left">
+                           <span className="text-[9px] font-black uppercase text-primary tracking-[0.3em] mb-2 block">VERIFIED MERCHANT</span>
+                           <h4 className="text-2xl font-black uppercase brand-font tracking-tight">{seller.name}</h4>
+                           <Link to={`/seller/${seller.uid}`} className="text-[10px] font-bold text-slate-500 hover:text-primary underline transition-colors uppercase mt-2 inline-block">
                              ভিউ ফুল প্রোফাইল
                            </Link>
                         </div>
                      </div>
                      <button 
                       onClick={startChat}
-                      className="w-full sm:w-auto px-8 h-14 bg-white text-slate-900 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl active:scale-90 transition-all flex items-center justify-center gap-3"
+                      className="btn-secondary h-14 !px-8 !rounded-2xl !bg-white !text-black shadow-2xl"
                      >
-                       <i className="fas fa-comment-dots text-primary"></i> মেসেজ দিন
+                       <i className="fas fa-comment-dots mr-2 text-primary"></i> মেসেজ
                      </button>
                   </div>
                </div>
@@ -281,22 +274,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ user }) => {
           </div>
         </div>
 
-        {/* Related Products - Public Visibility */}
         {related.length > 0 && (
-          <section className="mt-24">
-             <div className="flex items-center gap-6 mb-12">
-                <h2 className="text-2xl font-black uppercase brand-font tracking-tight">সদৃশ <span className="text-primary">পণ্যসমূহ</span></h2>
+          <section className="mt-32">
+             <div className="flex items-center gap-8 mb-16">
+                <h2 className="text-2xl md:text-3xl font-black uppercase brand-font tracking-tight">সদৃশ <span className="text-primary">পণ্যসমূহ</span></h2>
                 <div className="h-px flex-1 bg-slate-100 dark:bg-white/5"></div>
              </div>
              
-             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 md:gap-10">
                 {related.map(p => (
-                  <Link key={p.id} to={`/product/${p.id}`} className="group bg-white dark:bg-zinc-900 border border-slate-100 dark:border-white/5 rounded-[32px] p-5 transition-all duration-500 hover:shadow-2xl flex flex-col h-full">
-                     <div className="aspect-square bg-slate-50 dark:bg-black/20 rounded-[24px] mb-5 p-6 flex items-center justify-center overflow-hidden">
-                        <img src={p.image.split(',')[0]} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" alt="" />
+                  <Link key={p.id} to={`/product/${p.id}`} className="group bg-white dark:bg-zinc-900/60 border border-slate-100 dark:border-white/5 rounded-[40px] p-6 transition-all duration-500 hover:shadow-2xl flex flex-col h-full hover:-translate-y-2">
+                     <div className="aspect-square bg-slate-50 dark:bg-black/40 rounded-[32px] mb-6 p-8 flex items-center justify-center overflow-hidden">
+                        <img src={p.image.split(',')[0]} className="w-full h-full object-contain group-hover:scale-125 transition-transform duration-700" alt="" />
                      </div>
-                     <h4 className="font-bold text-[11px] uppercase truncate mb-2 leading-tight text-slate-800 dark:text-slate-200">{p.name}</h4>
-                     <p className="text-primary font-black brand-font text-xs mt-auto">৳{p.price.toLocaleString()}</p>
+                     <h4 className="font-bold text-[12px] uppercase truncate mb-3 leading-tight text-slate-800 dark:text-slate-100">{p.name}</h4>
+                     <p className="text-primary font-black brand-font text-sm mt-auto italic">৳{p.price.toLocaleString()}</p>
                   </Link>
                 ))}
              </div>
