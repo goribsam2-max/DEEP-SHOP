@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { auth, db } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-// Added updateDoc to imports
 import { doc, onSnapshot, getDoc, setDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { User } from './types';
 
@@ -32,12 +31,12 @@ import Navbar from './components/Navbar';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
 import BanScreen from './components/BanScreen';
+import UserGuide from './components/UserGuide';
 
 export const NotificationContext = React.createContext<{
   notify: (msg: string, type?: 'success' | 'error' | 'info') => void;
 }>({ notify: () => {} });
 
-// Helper to get or create device ID
 const getDeviceId = () => {
   let id = localStorage.getItem('ds_device_id');
   if (!id) {
@@ -51,8 +50,24 @@ const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void; isGlo
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasUnreadNotify, setHasUnreadNotify] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
-  // If banned, show nothing but the BanScreen
+  useEffect(() => {
+    if (user?.uid) {
+      const guideShown = localStorage.getItem(`guide_shown_${user.uid}`);
+      if (!guideShown) {
+        setShowGuide(true);
+      }
+    }
+  }, [user?.uid]);
+
+  const handleGuideComplete = () => {
+    if (user?.uid) {
+      localStorage.setItem(`guide_shown_${user.uid}`, 'true');
+    }
+    setShowGuide(false);
+  };
+
   if (isGlobalBanned || (user && user.isBanned)) {
     return <BanScreen ip={banDetails?.ip} deviceId={banDetails?.deviceId} reason={user?.isBanned ? "Account Disabled" : "Device/IP Restricted"} />;
   }
@@ -70,8 +85,9 @@ const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void; isGlo
   }, [user?.uid]);
 
   return (
-    <div className="min-h-screen flex flex-col max-w-lg mx-auto bg-white dark:bg-black relative select-none shadow-2xl overflow-x-hidden">
+    <div className="min-h-screen flex flex-col w-full bg-white dark:bg-black relative select-none shadow-2xl overflow-x-hidden">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} user={user} />
+      {showGuide && user && <UserGuide onComplete={handleGuideComplete} />}
 
       {!hideNav && (
         <Navbar 
@@ -82,31 +98,35 @@ const AppLayout: React.FC<{ user: User | null; exitShadowMode: () => void; isGlo
         />
       )}
 
-      <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
-        <Routes>
-          <Route path="/" element={<Home user={user} />} />
-          <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/product/:id" element={<ProductDetail user={user} />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout user={user} />} />
-          <Route path="/track-order" element={<OrderTracking />} />
-          <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/messages" element={user ? <Messages user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/chat/:chatId" element={user ? <ChatRoom user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/story/:storyId" element={user ? <StoryViewer user={user} /> : <Navigate to="/auth" />} />
-          <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/edit-product/:productId" element={<AddProduct />} />
-          <Route path="/seller/:id" element={<SellerProfile />} />
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+      {/* Main Container constrained for desktop but allowing full flow */}
+      <main className="flex-1 flex flex-col overflow-y-auto no-scrollbar w-full">
+        <div className="w-full h-full max-w-none mx-auto">
+          <Routes>
+            <Route path="/" element={<Home user={user} />} />
+            <Route path="/auth" element={!user ? <Auth /> : <Navigate to="/" />} />
+            <Route path="/explore" element={<Explore />} />
+            <Route path="/product/:id" element={<ProductDetail user={user} />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout user={user} />} />
+            <Route path="/track-order" element={<OrderTracking />} />
+            <Route path="/profile" element={user ? <Profile user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/my-orders" element={user ? <MyOrders user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/sales" element={user ? <Sales user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/notifications" element={user ? <Notifications user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/messages" element={user ? <Messages user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/chat/:chatId" element={user ? <ChatRoom user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/story/:storyId" element={user ? <StoryViewer user={user} /> : <Navigate to="/auth" />} />
+            <Route path="/admin" element={user?.isAdmin ? <Admin /> : <Navigate to="/" />} />
+            <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/edit-product/:productId" element={<AddProduct />} />
+            <Route path="/seller/:id" element={<SellerProfile />} />
+            <Route path="*" element={<Navigate to="/" />} />
+          </Routes>
+        </div>
       </main>
 
-      {isHome && <BottomNav />}
+      {/* Show bottom nav only on mobile AND if we are not on pages that hide navigation */}
+      {!hideNav && <BottomNav />}
     </div>
   );
 };
@@ -130,7 +150,6 @@ const App: React.FC = () => {
 
       setBanDetails({ ip, deviceId });
 
-      // Check if this specific IP or DeviceID is banned in Firestore
       const deviceBanRef = doc(db, 'banned_devices', deviceId);
       const ipBanRef = doc(db, 'banned_devices', ip.replace(/\./g, '_'));
       
@@ -142,7 +161,6 @@ const App: React.FC = () => {
         return;
       }
 
-      // Proceed with Auth Check
       const shadowUserStr = localStorage.getItem('shadow_user');
       if (shadowUserStr) {
         const shadowUser = JSON.parse(shadowUserStr) as User;
@@ -157,9 +175,6 @@ const App: React.FC = () => {
             if (docSnap.exists()) {
               const userData = { uid: firebaseUser.uid, ...docSnap.data() } as User;
               setUser(userData);
-              
-              // Update user's device info for tracking
-              // updateDoc is now imported above
               updateDoc(doc(db, 'users', firebaseUser.uid), {
                 deviceId: deviceId,
                 lastIp: ip
