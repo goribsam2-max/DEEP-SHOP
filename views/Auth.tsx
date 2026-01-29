@@ -90,12 +90,12 @@ const Auth: React.FC = () => {
     switch(step) {
       case 0:
         return (
-          <div className="space-y-6 animate-slide-up">
-            <h2 className="text-xl font-black text-white uppercase tracking-tight">আপনার নাম দিন</h2>
+          <div className="space-y-6 animate-slide-up w-full">
+            <h2 className="text-xl font-black text-white uppercase tracking-tight text-center">আপনার নাম দিন</h2>
             <input 
               required 
               placeholder="পুরো নাম" 
-              className="w-full h-16 px-8 bg-zinc-800 rounded-[24px] outline-none font-bold text-lg border-2 border-transparent focus:border-primary/50 transition-all text-white" 
+              className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-lg border border-white/5 focus:border-primary/50 transition-all text-white" 
               value={form.name} 
               onChange={e => setForm({...form, name: e.target.value})} 
             />
@@ -104,49 +104,49 @@ const Auth: React.FC = () => {
         );
       case 1:
         return (
-          <div className="space-y-6 animate-slide-up">
-            <h2 className="text-xl font-black text-white uppercase tracking-tight">মোবাইল নম্বর দিন</h2>
+          <div className="space-y-6 animate-slide-up w-full">
+            <h2 className="text-xl font-black text-white uppercase tracking-tight text-center">মোবাইল নম্বর দিন</h2>
             <input 
               required 
               type="tel"
               placeholder="০১৭XXXXXXXX" 
-              className="w-full h-16 px-8 bg-zinc-800 rounded-[24px] outline-none font-bold text-lg border-2 border-transparent focus:border-primary/50 transition-all text-white" 
+              className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-lg border border-white/5 focus:border-primary/50 transition-all text-white" 
               value={form.phone} 
               onChange={e => setForm({...form, phone: e.target.value})} 
             />
             <div className="flex gap-4">
-              <button onClick={() => setStep(0)} className="flex-1 h-20 bg-zinc-800 text-white rounded-[24px] font-black uppercase text-[10px] tracking-widest">পিছনে</button>
+              <button onClick={() => setStep(0)} className="flex-1 h-20 bg-zinc-800/50 text-white rounded-[24px] font-black uppercase text-[10px] tracking-widest border border-white/5">পিছনে</button>
               <button onClick={handleNext} className="flex-[2] h-20 btn-primary">পরবর্তী <i className="fas fa-chevron-right ml-2"></i></button>
             </div>
           </div>
         );
       case 2:
         return (
-          <div className="space-y-6 animate-slide-up">
-            <h2 className="text-xl font-black text-white uppercase tracking-tight">ইমেইল এড্রেস দিন</h2>
+          <div className="space-y-6 animate-slide-up w-full">
+            <h2 className="text-xl font-black text-white uppercase tracking-tight text-center">ইমেইল এড্রেস দিন</h2>
             <input 
               required 
               type="email"
               placeholder="example@gmail.com" 
-              className="w-full h-16 px-8 bg-zinc-800 rounded-[24px] outline-none font-bold text-lg border-2 border-transparent focus:border-primary/50 transition-all text-white" 
+              className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-lg border border-white/5 focus:border-primary/50 transition-all text-white" 
               value={form.email} 
               onChange={e => setForm({...form, email: e.target.value})} 
             />
             <div className="flex gap-4">
-              <button onClick={() => setStep(1)} className="flex-1 h-20 bg-zinc-800 text-white rounded-[24px] font-black uppercase text-[10px] tracking-widest">পিছনে</button>
+              <button onClick={() => setStep(1)} className="flex-1 h-20 bg-zinc-800/50 text-white rounded-[24px] font-black uppercase text-[10px] tracking-widest border border-white/5">পিছনে</button>
               <button onClick={handleNext} className="flex-[2] h-20 btn-primary">পরবর্তী <i className="fas fa-chevron-right ml-2"></i></button>
             </div>
           </div>
         );
       case 3:
         return (
-          <div className="space-y-6 animate-slide-up">
-            <h2 className="text-xl font-black text-white uppercase tracking-tight">পাসওয়ার্ড সেট করুন</h2>
+          <div className="space-y-6 animate-slide-up w-full">
+            <h2 className="text-xl font-black text-white uppercase tracking-tight text-center">পাসওয়ার্ড সেট করুন</h2>
             <input 
               required 
               type="password"
               placeholder="পাসওয়ার্ড (৬+ অক্ষর)" 
-              className="w-full h-16 px-8 bg-zinc-800 rounded-[24px] outline-none font-bold text-lg border-2 border-transparent focus:border-primary/50 transition-all text-white" 
+              className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-lg border border-white/5 focus:border-primary/50 transition-all text-white" 
               value={form.password} 
               onChange={e => setForm({...form, password: e.target.value})} 
             />
@@ -154,24 +154,24 @@ const Auth: React.FC = () => {
               required 
               type="password"
               placeholder="পাসওয়ার্ড নিশ্চিত করুন" 
-              className="w-full h-16 px-8 bg-zinc-800 rounded-[24px] outline-none font-bold text-lg border-2 border-transparent focus:border-primary/50 transition-all text-white" 
+              className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-lg border border-white/5 focus:border-primary/50 transition-all text-white" 
               value={form.confirmPassword} 
               onChange={e => setForm({...form, confirmPassword: e.target.value})} 
             />
             <div className="flex gap-4">
-              <button onClick={() => setStep(2)} className="flex-1 h-20 bg-zinc-800 text-white rounded-[24px] font-black uppercase text-[10px] tracking-widest">পিছনে</button>
+              <button onClick={() => setStep(2)} className="flex-1 h-20 bg-zinc-800/50 text-white rounded-[24px] font-black uppercase text-[10px] tracking-widest border border-white/5">পিছনে</button>
               <button onClick={handleNext} className="flex-[2] h-20 btn-primary">পরবর্তী <i className="fas fa-chevron-right ml-2"></i></button>
             </div>
           </div>
         );
       case 4:
         return (
-          <div className="space-y-8 animate-slide-up flex flex-col items-center">
+          <div className="space-y-8 animate-slide-up flex flex-col items-center w-full">
             <h2 className="text-xl font-black text-white uppercase tracking-tight text-center">প্রোফাইল পিকচার দিন</h2>
             
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="w-40 h-40 rounded-[48px] bg-zinc-800 border-2 border-dashed border-primary/30 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group shadow-2xl"
+              className="w-40 h-40 rounded-[48px] bg-zinc-800/50 border-2 border-dashed border-primary/30 flex flex-col items-center justify-center cursor-pointer overflow-hidden relative group shadow-2xl"
             >
               {form.profilePic ? (
                 <img src={form.profilePic} className="w-full h-full object-cover" />
@@ -199,27 +199,30 @@ const Auth: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col p-8 justify-center animate-fade-in relative overflow-hidden bg-black min-h-screen">
-      <div className="absolute top-0 left-0 w-64 h-64 bg-primary/15 blur-[130px] rounded-full -translate-x-20 -translate-y-20"></div>
-      <div className="absolute bottom-0 right-0 w-64 h-64 bg-primary/15 blur-[130px] rounded-full translate-x-20 translate-y-20"></div>
+      {/* Background Lights */}
+      <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary/10 blur-[130px] rounded-full"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-primary/10 blur-[130px] rounded-full"></div>
+      </div>
       
-      <div className="text-center mb-12 relative z-10 animate-slide-up">
-         <div className="w-24 h-24 bg-primary/5 p-1 rounded-[36px] mx-auto mb-8 shadow-[0_0_60px_rgba(0,143,91,0.2)] border border-primary/20 overflow-hidden">
-            <img src="https://i.ibb.co.com/mrgXJBvG/IMG-2747.jpg" className="w-full h-full object-cover rounded-[34px]" alt="Logo" />
+      <div className="text-center mb-12 relative z-10 animate-slide-up max-w-lg mx-auto w-full">
+         <div className="w-28 h-28 bg-primary/5 p-1 rounded-[40px] mx-auto mb-10 shadow-[0_0_80px_rgba(0,143,91,0.25)] border border-white/5 overflow-hidden">
+            <img src="https://i.ibb.co.com/mrgXJBvG/IMG-2747.jpg" className="w-full h-full object-cover rounded-[38px]" alt="Logo" />
          </div>
-         <h1 className="text-3xl font-black uppercase tracking-tighter brand-font leading-none text-white">DEEP <span className="text-primary">SHOP</span></h1>
-         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-500 mt-3">Exclusive Gadget Universe</p>
+         <h1 className="text-4xl font-black uppercase tracking-tighter brand-font leading-none text-white">DEEP <span className="text-primary">SHOP</span></h1>
+         <p className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 mt-4 text-center">Exclusive Gadget Universe</p>
       </div>
 
-      <div className="bg-zinc-900/60 backdrop-blur-3xl p-10 rounded-[48px] border border-white/5 relative z-10 shadow-2xl">
+      <div className="relative z-10 w-full max-w-sm mx-auto">
          {isLogin ? (
-           <form onSubmit={handleSubmit} className="space-y-6 animate-slide-up">
+           <form onSubmit={handleSubmit} className="space-y-6 animate-slide-up w-full">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">EMAIL ADDRESS</label>
-                <input required type="email" placeholder="ইমেইল এড্রেস" className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-sm border border-white/5 focus:border-primary/50 transition-all text-white" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
+                <input required type="email" placeholder="ইমেইল এড্রেস" className="w-full h-16 px-8 bg-zinc-800/40 rounded-[24px] outline-none font-bold text-sm border border-white/5 focus:border-primary/50 transition-all text-white" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-slate-500 ml-4 tracking-widest">PASSWORD</label>
-                <input required type="password" placeholder="পাসওয়ার্ড" className="w-full h-16 px-8 bg-zinc-800/50 rounded-[24px] outline-none font-bold text-sm border border-white/5 focus:border-primary/50 transition-all text-white" value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
+                <input required type="password" placeholder="পাসওয়ার্ড" className="w-full h-16 px-8 bg-zinc-800/40 rounded-[24px] outline-none font-bold text-sm border border-white/5 focus:border-primary/50 transition-all text-white" value={form.password} onChange={e => setForm({...form, password: e.target.value})} />
               </div>
               
               <button disabled={loading} className="w-full h-20 btn-primary mt-6">
@@ -228,18 +231,20 @@ const Auth: React.FC = () => {
            </form>
          ) : renderRegistrationSteps()}
 
-         <div className="mt-10 flex items-center gap-4">
+         <div className="mt-10 flex items-center gap-4 w-full">
             <div className="h-px flex-1 bg-white/5"></div>
             <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">অথবা</span>
             <div className="h-px flex-1 bg-white/5"></div>
          </div>
 
-         <button onClick={() => navigate('/')} className="w-full h-16 btn-secondary !bg-white/5 !text-slate-400 !border-white/5 hover:!bg-white/10 !rounded-3xl">
-            CONTINUE AS GUEST
-         </button>
+         <div className="w-full mt-8">
+            <button onClick={() => navigate('/')} className="w-full h-18 btn-secondary !bg-zinc-800/30 !text-slate-400 !border-white/5 hover:!bg-zinc-800/50 !rounded-3xl">
+               CONTINUE AS GUEST
+            </button>
+         </div>
       </div>
 
-      <p className="mt-10 text-center animate-slide-up">
+      <p className="mt-12 text-center animate-slide-up relative z-10 max-w-lg mx-auto w-full">
          <button onClick={() => { setIsLogin(!isLogin); setStep(0); }} className="text-[10px] font-black text-slate-500 hover:text-primary uppercase tracking-[0.2em] transition-colors border-b border-slate-800 pb-1">
             {isLogin ? 'নতুন অ্যাকাউন্ট? রেজিস্ট্রেশন করুন' : 'আগের অ্যাকাউন্ট আছে? লগইন করুন'}
          </button>
