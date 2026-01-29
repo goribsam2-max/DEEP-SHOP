@@ -238,10 +238,10 @@ const Auth: React.FC = () => {
          </div>
 
          <div className="w-full mt-8">
-            <button onClick={() => navigate('/')} className="w-full h-18 btn-secondary !bg-zinc-800/30 !text-slate-400 !border-white/5 hover:!bg-zinc-800/50 !rounded-3xl">
-               CONTINUE AS GUEST
-            </button>
-         </div>
+            <button onClick={() => navigate('/')} className="w-full h-16 btn-secondary !bg-white/5 !text-slate-400 !border-white/5 hover:!bg-white/10 !rounded-3xl">
+            CONTINUE AS GUEST
+         </button>
+      </div>
       </div>
 
       <p className="mt-12 text-center animate-slide-up relative z-10 max-w-lg mx-auto w-full">
