@@ -4,89 +4,166 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>DEEP SHOP - Premium Hardware</title>
+  <title>DEEP SHOP - Premium Shopping</title>
+  <meta name="description" content="Premium gadget store with secure payment gateway." />
   
-  <meta name="description" content="Exclusive Tech Artifacts & Gadgets in Bangladesh. Official DEEP SHOP Flagship." />
-  
-  <!-- PWA Meta Tags -->
+<!-- PWA Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="DEEP SHOP">
-  <link rel="apple-touch-icon" href="https://i.ibb.co.com/cKknZQx1/IMG-2179.jpg">
+  <link rel="apple-touch-icon" href="https://i.ibb.co.com/mrgXJBvG/IMG-2747.jpg">
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#e11d48">
-
+  <meta name="theme-color" content="#008F5B">
+  
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    window.OneSignal = window.OneSignal || [];
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            primary: '#e11d48',
-            accent: '#1e90ff',
-            danger: '#dc3545',
-            success: '#28a745',
-            gold: '#FFD700',
-            bronze: '#CD7F32',
-            silver: '#C0C0C0',
-            platinum: '#E5E4E2'
+            primary: '#008F5B', // Even deeper green for maximum contrast
+            deep: '#050505',
+            glass: 'rgba(255, 255, 255, 0.03)',
+            bkash: '#D12053',
+            nagad: '#F7941D'
           },
           borderRadius: {
-            'ios': '16px',
-            'ios-lg': '28px',
+            'ios': '18px',
+            'ios-lg': '24px',
             'ios-xl': '36px'
           },
           animation: {
-            'fade-in': 'fadeIn 0.5s ease-out',
-            'slide-up': 'slideUp 0.5s ease-out'
+            'float': 'float 4s ease-in-out infinite',
+            'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'fade-in': 'fadeIn 0.5s ease-out forwards',
+            'scale-in': 'scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+            'wave-slow': 'wave 20s linear infinite',
           },
           keyframes: {
-            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-            slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-12px)' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(30px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            scaleIn: {
+              '0%': { transform: 'scale(0.95)', opacity: '0' },
+              '100%': { transform: 'scale(1)', opacity: '1' },
+            },
+            wave: {
+              '0%': { transform: 'translateX(0)' },
+              '100%': { transform: 'translateX(-50%)' }
+            }
           }
         }
       }
     }
   </script>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Poppins:wght@700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    body { font-family: 'Hind Siliguri', sans-serif; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
-    h1, h2, h3, h4, .brand-font { font-family: 'Poppins', sans-serif; }
-    .glass {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+    :root {
+      --primary: #008F5B;
     }
-    .dark .glass {
-      background: rgba(10, 10, 10, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    * {
+      letter-spacing: 0 !important;
+      font-style: normal !important;
+    }
+    body { 
+      font-family: 'Hind Siliguri', sans-serif; 
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      background-color: #fcfcfc;
+    }
+    .dark body {
+      background-color: #000;
+    }
+    h1, h2, h3, .brand-font { 
+      font-family: 'Poppins', sans-serif; 
+      font-weight: 800;
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* Smooth Transitions for Bangla Text */
-    * { transition: background-color 0.3s ease, border-color 0.3s ease; }
-  </style>
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@^19.2.3",
-      "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-      "react/": "https://esm.sh/react@^19.2.3/",
-      "firebase/": "https://esm.sh/firebase@^12.8.0/",
-      "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0",
-      "html2canvas": "https://esm.sh/html2canvas@1.4.1"
+    /* IMPROVED PROFESSIONAL BUTTON STYLES (MOTA & BOLD) */
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-radius: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 12px 24px rgba(0, 143, 91, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.15);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
     }
+    .btn-primary:active { transform: scale(0.96); box-shadow: 0 6px 12px rgba(0, 143, 91, 0.15); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: #111;
+      color: #fff;
+      border-radius: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .dark .btn-secondary { background: #222; color: #fff; }
+    .btn-secondary:active { transform: scale(0.96); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: 24px;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 11px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-outline:active { background: rgba(0, 143, 91, 0.05); transform: scale(0.96); }
+
+    .suta-line {
+      fill: none;
+      stroke: rgba(0, 143, 91, 0.2);
+      stroke-width: 0.5;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "firebase/": "https://esm.sh/firebase@^12.8.0/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1"
   }
-  </script>
+}
+</script>
 <link rel="stylesheet" href="/index.css">
 </head>
-<body class="bg-[#F8F9FA] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-primary selection:text-white">
+<body class="text-slate-900 dark:text-white">
   <div id="root"></div>
 <script type="module" src="/index.tsx"></script>
 </body>
