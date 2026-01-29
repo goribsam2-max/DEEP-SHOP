@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User } from '../types';
@@ -33,12 +32,12 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify, show
         )}
         
         <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg p-0.5 bg-white shrink-0">
-             <img src="https://i.ibb.co.com/cKknZQx1/IMG-2179.jpg" className="w-full h-full object-cover rounded-lg" alt="Logo" />
+          <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg p-0.5 bg-black shrink-0">
+             <img src="https://i.ibb.co.com/mrgXJBvG/IMG-2747.jpg" className="w-full h-full object-cover rounded-lg" alt="Logo" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase brand-font">DEEP SHOP</span>
-            <span className="text-[6px] font-black tracking-[0.3em] text-primary uppercase mt-1">Bangladesh</span>
+            <span className="text-lg font-black tracking-tighter text-slate-900 dark:text-white leading-none uppercase brand-font">DEEP <span className="text-primary">SHOP</span></span>
+            <span className="text-[6px] font-black tracking-[0.3em] text-primary uppercase mt-1">অফিসিয়াল স্টোর</span>
           </div>
         </Link>
       </div>
@@ -61,7 +60,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, onOpenMenu, hasUnreadNotify, show
               />
             ) : user ? (
               <img 
-                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=e11d48&color=fff&size=128`} 
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=38FF00&color=000&bold=true&size=128`} 
                 alt={user.name} 
                 className="w-full h-full object-cover"
               />
