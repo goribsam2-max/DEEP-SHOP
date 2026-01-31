@@ -10,7 +10,7 @@ import RankBadge from '../components/RankBadge';
 const IMGBB_API_KEY = '31505ba1cbfd565b7218c0f8a8421a7e';
 
 const Admin: React.FC = () => {
-  const [activeView, setActiveView] = useState<'dashboard' | 'orders' | 'products' | 'users' | 'requests' | 'banners' | 'settings'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'orders' | 'products' | 'users' | 'sellers' | 'requests' | 'banners' | 'settings'>('dashboard');
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -52,6 +52,7 @@ const Admin: React.FC = () => {
 
   const adminProducts = allProducts.filter(p => p.sellerId === auth.currentUser?.uid || !p.sellerId);
   const adminOrders = orders.filter(o => o.sellerId === auth.currentUser?.uid || !o.sellerId);
+  const sellers = allUsers.filter(u => u.isSellerApproved);
   const pendingOrdersCount = adminOrders.filter(o => o.status === 'pending').length;
 
   const sidebarItems = [
@@ -59,6 +60,7 @@ const Admin: React.FC = () => {
     { id: 'orders', label: 'অর্ডার', icon: 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z', badge: pendingOrdersCount },
     { id: 'products', label: 'প্রোডাক্টস', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
     { id: 'users', label: 'ইউজার্স', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z' },
+    { id: 'sellers', label: 'সেলার লিস্ট', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
     { id: 'requests', label: 'সেলার রিকোয়েস্ট', icon: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z' },
     { id: 'banners', label: 'ব্যানার ম্যানেজার', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' },
     { id: 'settings', label: 'সেটিংস', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924-1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z' },
@@ -127,6 +129,7 @@ const Admin: React.FC = () => {
           {activeView === 'orders' && <OrdersList orders={adminOrders} notify={notify} />}
           {activeView === 'products' && <ProductsList products={adminProducts} notify={notify} navigate={navigate} />}
           {activeView === 'users' && <UsersList users={allUsers} notify={notify} />}
+          {activeView === 'sellers' && <SellersList users={allUsers} notify={notify} />}
           {activeView === 'requests' && <SellerRequests requests={sellerRequests} notify={notify} />}
           {activeView === 'banners' && <BannersManager banners={banners} notify={notify} />}
           {activeView === 'settings' && <GlobalSettings config={config} notify={notify} />}
@@ -134,7 +137,7 @@ const Admin: React.FC = () => {
       </main>
 
       <style>{`
-        .admin-btn-primary { background: #e11d48; color: white; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; transition: all 0.3s; box-shadow: 0 10px 20px rgba(225, 29, 72, 0.2); display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; }
+        .admin-btn-primary { background: #008F5B; color: white; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; transition: all 0.3s; box-shadow: 0 10px 20px rgba(0, 143, 91, 0.2); display: flex; align-items: center; justify-content: center; height: 50px; width: 100%; }
         .admin-btn-secondary { background: #f8fafc; color: #94a3b8; border-radius: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; height: 50px; border: 1px solid #f1f5f9; }
         .dark .admin-btn-secondary { background: #18181b; border-color: #27272a; color: #71717a; }
         .admin-btn-dark { background: #0f172a; color: white; border-radius: 24px; font-weight: 900; text-transform: uppercase; font-size: 11px; height: 60px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 20px rgba(0,0,0,0.2); transition: all 0.3s; width: 100%; }
@@ -144,7 +147,7 @@ const Admin: React.FC = () => {
   );
 };
 
-// Fraud Pill Updated with fraudchecker.link API and Full Screen Popup
+// ... FraudPill component ...
 export const FraudPill = ({ phone, notify }: { phone: string, notify: any }) => {
   const [status, setStatus] = useState<'loading' | 'clean' | 'risky' | 'fraud'>('loading');
   const [report, setReport] = useState<any>(null);
@@ -306,7 +309,7 @@ const OrdersList = ({ orders, notify }: any) => {
                  <select value={o.status} onChange={(e) => updateStatus(o.id, e.target.value as OrderStatus)} className="w-full h-15 bg-slate-900 text-white rounded-[28px] px-8 text-[11px] font-black uppercase outline-none shadow-lg">
                     {['pending', 'processing', 'packaging', 'shipped', 'delivered', 'canceled'].map(s => <option key={s} value={s}>{s}</option>)}
                  </select>
-                 <button onClick={() => window.open(`https://wa.me/${o.userInfo?.phone}`, '_blank')} className="admin-btn-primary bg-green-600 h-15"><i className="fab fa-whatsapp mr-3 text-lg"></i> Contact Buyer</button>
+                 <button onClick={() => window.open(`https://wa.me/${o.userInfo?.phone}`, '_blank')} className="admin-btn-primary bg-green-600 h-15 shadow-[0_10px_20px_rgba(22,163,74,0.2)]"><i className="fab fa-whatsapp mr-3 text-lg"></i> Contact Buyer</button>
               </div>
            </div>
         </div>
@@ -316,6 +319,14 @@ const OrdersList = ({ orders, notify }: any) => {
 };
 
 const UsersList = ({ users, notify }: any) => {
+  const [search, setSearch] = useState('');
+  
+  const filteredUsers = users.filter((u: User) => 
+    u.name.toLowerCase().includes(search.toLowerCase()) || 
+    u.email.toLowerCase().includes(search.toLowerCase()) || 
+    u.phone.includes(search)
+  );
+
   const toggleBan = async (u: User, type: 'isBanned' | 'ipBan' | 'deviceBan') => {
     try {
       if (type === 'isBanned') await updateDoc(doc(db, 'users', u.uid), { isBanned: !u.isBanned });
@@ -325,43 +336,160 @@ const UsersList = ({ users, notify }: any) => {
     } catch (e: any) { notify(e.message, 'error'); }
   };
 
+  const toggleSellerStatus = async (uid: string, current: boolean) => {
+    try {
+      await updateDoc(doc(db, 'users', uid), { isSellerApproved: !current });
+      notify(current ? 'Seller Access Removed' : 'Seller Access Approved', 'success');
+    } catch (e: any) { notify(e.message, 'error'); }
+  };
+
+  const shadowLogin = (u: User) => {
+    localStorage.setItem('shadow_user', JSON.stringify(u));
+    window.location.href = '/';
+  };
+
   const changeRank = async (uid: string, rank: SellerRank) => {
     try { await updateDoc(doc(db, 'users', uid), { rankOverride: rank }); notify('Rank Updated', 'success'); } catch (e: any) { notify(e.message, 'error'); }
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
-       <h2 className="text-xl font-black uppercase brand-font italic">User <span className="text-primary">Database</span></h2>
-       {users.map((u: User) => (
-         <div key={u.uid} className="bg-white dark:bg-zinc-900 p-8 rounded-[44px] border border-slate-100 dark:border-white/5 flex flex-col space-y-8 shadow-sm">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-               <div className="flex items-center gap-6 flex-1">
-                  <img src={u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=e11d48&color=fff&bold=true`} className="w-16 h-16 rounded-[24px] shadow-lg" alt="" />
-                  <div>
-                    <h4 className="font-black text-lg uppercase tracking-tight">{u.name}</h4>
-                    <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">{u.email} | {u.phone}</p>
-                    <div className="flex gap-2 mt-3 items-center">
-                       <RankBadge rank={u.rankOverride || 'bronze'} size="sm" />
-                       <span className="text-[8px] font-black text-slate-500 uppercase bg-slate-50 dark:bg-white/5 px-2 py-1 rounded-md">IP: {u.lastIp || 'N/A'}</span>
-                    </div>
+    <div className="animate-fade-in space-y-8">
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <h2 className="text-xl font-black uppercase brand-font italic">User <span className="text-primary">Database</span></h2>
+          <div className="relative w-full md:w-80">
+            <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              placeholder="Search users..." 
+              className="w-full h-12 pl-12 pr-5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-white/5 outline-none font-bold text-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+       </div>
+
+       <div className="space-y-6">
+          {filteredUsers.map((u: User) => (
+            <div key={u.uid} className="bg-white dark:bg-zinc-900 p-8 rounded-[44px] border border-slate-100 dark:border-white/5 flex flex-col space-y-8 shadow-sm">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="flex items-center gap-6 flex-1">
+                      <img src={u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=e11d48&color=fff&bold=true`} className="w-16 h-16 rounded-[24px] shadow-lg" alt="" />
+                      <div>
+                        <h4 className="font-black text-lg uppercase tracking-tight">{u.name}</h4>
+                        <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-widest">{u.email} | {u.phone}</p>
+                        <div className="flex gap-2 mt-3 items-center">
+                          <RankBadge rank={u.rankOverride || 'bronze'} size="sm" />
+                          <span className="text-[8px] font-black text-slate-500 uppercase bg-slate-50 dark:bg-white/5 px-2 py-1 rounded-md">IP: {u.lastIp || 'N/A'}</span>
+                          {u.isSellerApproved && <span className="bg-primary/10 text-primary text-[8px] font-black px-2 py-1 rounded-md uppercase">Verified Seller</span>}
+                        </div>
+                      </div>
                   </div>
-               </div>
-               <div className="grid grid-cols-2 md:flex gap-3 w-full md:w-auto">
-                  <button onClick={() => toggleBan(u, 'isBanned')} className={`admin-btn-primary !h-12 !rounded-2xl !text-[8px] flex-1 ${u.isBanned ? '!bg-green-600' : '!bg-rose-600'}`}>{u.isBanned ? 'Authorize' : 'Account Ban'}</button>
-                  <button onClick={() => toggleBan(u, 'ipBan')} className="admin-btn-primary !bg-black !h-12 !rounded-2xl !text-[8px] flex-1">Ban IP</button>
-                  <button onClick={() => toggleBan(u, 'deviceBan')} className="admin-btn-primary !bg-black !h-12 !rounded-2xl !text-[8px] flex-1">Ban Device</button>
-               </div>
+                  <div className="grid grid-cols-2 lg:flex gap-3 w-full md:w-auto">
+                      <button onClick={() => shadowLogin(u)} className="admin-btn-dark !h-12 !rounded-2xl !text-[8px] flex-1 !bg-indigo-600 !text-white border-0"><i className="fas fa-ghost mr-2"></i>Shadow Log</button>
+                      <button onClick={() => toggleSellerStatus(u.uid, !!u.isSellerApproved)} className={`admin-btn-primary !h-12 !rounded-2xl !text-[8px] flex-1 ${u.isSellerApproved ? '!bg-amber-500' : '!bg-primary'}`}>
+                        {u.isSellerApproved ? 'Unverify Seller' : 'Verify Seller'}
+                      </button>
+                      <button onClick={() => toggleBan(u, 'isBanned')} className={`admin-btn-primary !h-12 !rounded-2xl !text-[8px] flex-1 ${u.isBanned ? '!bg-green-600' : '!bg-rose-600'}`}>{u.isBanned ? 'Authorize' : 'Account Ban'}</button>
+                      <button onClick={() => toggleBan(u, 'ipBan')} className="admin-btn-primary !bg-black !h-12 !rounded-2xl !text-[8px] flex-1">Ban IP</button>
+                      <button onClick={() => toggleBan(u, 'deviceBan')} className="admin-btn-primary !bg-black !h-12 !rounded-2xl !text-[8px] flex-1">Ban Device</button>
+                  </div>
+                </div>
             </div>
-            <div className="pt-6 border-t border-slate-50 dark:border-white/5 flex items-center gap-6">
-               <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Change Rank:</span>
-               <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                  {['bronze', 'silver', 'gold', 'platinum', 'diamond', 'hero', 'grand'].map(rank => (
-                    <button key={rank} onClick={() => changeRank(u.uid, rank as SellerRank)} className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase border transition-all ${u.rankOverride === rank ? 'bg-primary text-white border-primary' : 'bg-slate-50 dark:bg-white/5 border-slate-100 dark:border-white/10 text-slate-500'}`}>{rank}</button>
-                  ))}
-               </div>
+          ))}
+       </div>
+    </div>
+  );
+};
+
+const SellersList = ({ users, notify }: any) => {
+  const [search, setSearch] = useState('');
+  const sellers = users.filter((u: User) => u.isSellerApproved);
+  
+  const filteredSellers = sellers.filter((u: User) => 
+    u.name.toLowerCase().includes(search.toLowerCase()) || 
+    u.email.toLowerCase().includes(search.toLowerCase()) || 
+    u.phone.includes(search)
+  );
+
+  const toggleBan = async (u: User) => {
+    try {
+      await updateDoc(doc(db, 'users', u.uid), { isBanned: !u.isBanned });
+      notify('Seller Security Status Updated', 'success');
+    } catch (e: any) { notify(e.message, 'error'); }
+  };
+
+  const unverify = async (uid: string) => {
+    if(!window.confirm('Are you sure you want to remove seller verification?')) return;
+    try {
+      await updateDoc(doc(db, 'users', uid), { isSellerApproved: false });
+      notify('Seller Unverified Successfully', 'success');
+    } catch (e: any) { notify(e.message, 'error'); }
+  };
+
+  return (
+    <div className="animate-fade-in space-y-8">
+       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <h2 className="text-xl font-black uppercase brand-font italic">Seller <span className="text-primary">Management</span></h2>
+          <div className="relative w-full md:w-80">
+            <i className="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input 
+              placeholder="Search verified sellers..." 
+              className="w-full h-12 pl-12 pr-5 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-white/5 outline-none font-bold text-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+       </div>
+
+       <div className="grid grid-cols-1 gap-6">
+          {filteredSellers.map((u: User) => (
+            <div key={u.uid} className="bg-white dark:bg-zinc-900 p-10 rounded-[56px] border border-slate-100 dark:border-white/5 flex flex-col md:flex-row items-center gap-10 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px] rounded-full translate-x-20 -translate-y-20"></div>
+                
+                <div className="relative z-10 w-32 h-32 shrink-0">
+                  <img src={u.profilePic || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=008F5B&color=fff&bold=true&size=256`} className="w-full h-full rounded-[40px] object-cover shadow-2xl" alt="" />
+                  <div className="absolute -bottom-2 -right-2">
+                    <RankBadge rank={u.rankOverride || 'bronze'} size="md" showLabel={false} />
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0 relative z-10 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                      <h4 className="text-2xl font-black uppercase tracking-tight truncate">{u.name}</h4>
+                      <span className="w-max mx-auto md:mx-0 px-4 py-1 bg-green-500/10 text-green-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-green-500/20">VERIFIED MERCHANT</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-12">
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Email Access</span>
+                          <p className="text-xs font-bold truncate">{u.email}</p>
+                       </div>
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">WhatsApp / Phone</span>
+                          <p className="text-xs font-bold">{u.phone}</p>
+                       </div>
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Account Balance</span>
+                          <p className="text-sm font-black brand-font text-primary italic">৳{(u.walletBalance || 0).toLocaleString()}</p>
+                       </div>
+                       <div className="flex flex-col gap-1">
+                          <span className="text-[8px] font-black uppercase text-slate-400 tracking-widest">Registered Since</span>
+                          <p className="text-[10px] font-bold text-slate-500">{u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB') : 'N/A'}</p>
+                       </div>
+                    </div>
+                </div>
+
+                <div className="w-full md:w-64 space-y-3 relative z-10">
+                    <button onClick={() => window.open(`https://wa.me/${u.phone}`, '_blank')} className="admin-btn-primary !h-14 bg-green-600 shadow-green-500/20"><i className="fab fa-whatsapp mr-3 text-lg"></i>WhatsApp Chat</button>
+                    <div className="grid grid-cols-2 gap-3">
+                       <button onClick={() => toggleBan(u)} className={`admin-btn-secondary !h-12 !rounded-2xl ${u.isBanned ? '!bg-green-100 !text-green-600' : '!bg-rose-100 !text-rose-600'}`}>
+                         {u.isBanned ? 'Unlock' : 'Block'}
+                       </button>
+                       <button onClick={() => unverify(u.uid)} className="admin-btn-secondary !bg-slate-100 !text-slate-800 !h-12 !rounded-2xl">Unverify</button>
+                    </div>
+                </div>
             </div>
-         </div>
-       ))}
+          ))}
+          {filteredSellers.length === 0 && <div className="py-40 text-center opacity-20 uppercase font-black tracking-[0.5em] text-[10px]">No sellers matching your search</div>}
+       </div>
     </div>
   );
 };
@@ -388,7 +516,7 @@ const ProductsList = ({ products, notify, navigate }: any) => {
              <p className="text-primary font-black brand-font text-xl mb-6">৳{p.price.toLocaleString()}</p>
              <div className="flex gap-2">
                 <button onClick={() => navigate(`/edit-product/${p.id}`)} className="admin-btn-secondary flex-1 !h-12 !rounded-2xl">Edit</button>
-                <button onClick={() => deleteProd(p.id)} className="admin-btn-primary flex-1 !h-12 !rounded-2xl !bg-rose-600">Del</button>
+                <button onClick={() => deleteProd(p.id)} className="admin-btn-primary flex-1 !h-12 !rounded-2xl !bg-rose-600 shadow-rose-500/20">Del</button>
              </div>
           </div>
         ))}
@@ -470,6 +598,7 @@ const SellerRequests = ({ requests, notify }: any) => {
             </div>
          </div>
        ))}
+       {requests.length === 0 && <div className="py-20 text-center opacity-20 uppercase font-black tracking-widest text-xs">No pending requests</div>}
     </div>
   );
 };
